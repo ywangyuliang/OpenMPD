@@ -1,0 +1,27 @@
+# Makefile definitions.  Comment out the one
+# you wish to use:
+
+# gcc-9 for Linux or Apple (note on Apple .. the gcc you get by default 
+# connects to their clang compiler which does not include OpenMP
+# CC          = gcc-9
+
+# Intel Compiler
+# CC          = /usr/local/cuda/bin/nvcc -arch=sm_35 -Wno-deprecated-gpu-targets
+CC = icc
+
+# gcc for Linux systems
+# CC          = gcc
+
+# These definitions should work on any system
+CLINKER     = $(CC)
+OPTFLAGS    = -O3 -Wall
+LIBS        = -lm
+PRE         = ./
+
+CFLAGS	  = -Wall -g $(OPTFLAGS)
+
+# Definitions for Linx and OSX.   We'd need to change these
+# to support Windows with nmake
+OBJ=o
+EXE=
+RM=rm

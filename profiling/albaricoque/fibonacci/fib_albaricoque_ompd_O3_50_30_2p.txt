@@ -1,0 +1,48 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 0/2 executing in processor albaricoque
+[DEBUG] rank 1/2 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 37.840977 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 1/2 executing in processor albaricoque
+[DEBUG] rank 0/2 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 37.806156 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 1/2 executing in processor albaricoque
+[DEBUG] rank 0/2 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 37.820797 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 1/2 executing in processor albaricoque
+[DEBUG] rank 0/2 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 37.779732 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 1/2 executing in processor albaricoque
+[DEBUG] rank 0/2 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 37.774136 seconds
+
+ Performance counter stats for 'mpirun -np 2 ./fibonacci-ompd_out 50 30' (5 runs):
+
+         75,839.11 msec task-clock                #    1.975 CPUs utilized            ( +-  0.03% )
+            10,068      context-switches          #  132.666 /sec                     ( +-  0.11% )
+               139      cpu-migrations            #    1.832 /sec                     ( +-  8.29% )
+            89,566      page-faults               #    1.180 K/sec                    ( +-  0.00% )
+   236,432,327,383      cycles                    #    3.115 GHz                      ( +-  0.01% )  (50.03%)
+   666,660,422,055      instructions              #    2.82  insn per cycle           ( +-  0.65% )  (62.53%)
+   116,075,951,985      branches                  #    1.530 G/sec                    ( +-  0.76% )  (62.48%)
+       521,256,071      branch-misses             #    0.44% of all branches          ( +-  0.96% )  (62.50%)
+   205,737,748,831      L1-dcache-loads           #    2.711 G/sec                    ( +-  4.13% )  (62.42%)
+        30,145,923      L1-dcache-load-misses     #    0.01% of all L1-dcache accesses  ( +-  2.49% )  (25.03%)
+         8,874,993      LLC-loads                 #  116.946 K/sec                    ( +-  1.57% )  (25.02%)
+         2,468,628      LLC-load-misses           #   28.96% of all LL-cache accesses  ( +-  0.97% )  (37.52%)
+
+          38.39754 +- 0.00570 seconds time elapsed  ( +-  0.01% )
+

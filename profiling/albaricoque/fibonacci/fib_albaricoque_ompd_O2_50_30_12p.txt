@@ -1,0 +1,98 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 9/12 executing in processor albaricoque
+[DEBUG] rank 10/12 executing in processor albaricoque
+[DEBUG] rank 0/12 executing in processor albaricoque
+[DEBUG] rank 3/12 executing in processor albaricoque
+[DEBUG] rank 5/12 executing in processor albaricoque
+[DEBUG] rank 6/12 executing in processor albaricoque
+[DEBUG] rank 7/12 executing in processor albaricoque
+[DEBUG] rank 8/12 executing in processor albaricoque
+[DEBUG] rank 11/12 executing in processor albaricoque
+[DEBUG] rank 1/12 executing in processor albaricoque
+[DEBUG] rank 2/12 executing in processor albaricoque
+[DEBUG] rank 4/12 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 4.168218 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 8/12 executing in processor albaricoque
+[DEBUG] rank 11/12 executing in processor albaricoque
+[DEBUG] rank 0/12 executing in processor albaricoque
+[DEBUG] rank 1/12 executing in processor albaricoque
+[DEBUG] rank 4/12 executing in processor albaricoque
+[DEBUG] rank 5/12 executing in processor albaricoque
+[DEBUG] rank 6/12 executing in processor albaricoque
+[DEBUG] rank 10/12 executing in processor albaricoque
+[DEBUG] rank 2/12 executing in processor albaricoque
+[DEBUG] rank 3/12 executing in processor albaricoque
+[DEBUG] rank 7/12 executing in processor albaricoque
+[DEBUG] rank 9/12 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 4.121627 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 11/12 executing in processor albaricoque
+[DEBUG] rank 0/12 executing in processor albaricoque
+[DEBUG] rank 2/12 executing in processor albaricoque
+[DEBUG] rank 5/12 executing in processor albaricoque
+[DEBUG] rank 7/12 executing in processor albaricoque
+[DEBUG] rank 9/12 executing in processor albaricoque
+[DEBUG] rank 8/12 executing in processor albaricoque
+[DEBUG] rank 3/12 executing in processor albaricoque
+[DEBUG] rank 4/12 executing in processor albaricoque
+[DEBUG] rank 1/12 executing in processor albaricoque
+[DEBUG] rank 10/12 executing in processor albaricoque
+[DEBUG] rank 6/12 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 4.125957 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 2/12 executing in processor albaricoque
+[DEBUG] rank 0/12 executing in processor albaricoque
+[DEBUG] rank 1/12 executing in processor albaricoque
+[DEBUG] rank 5/12 executing in processor albaricoque
+[DEBUG] rank 6/12 executing in processor albaricoque
+[DEBUG] rank 7/12 executing in processor albaricoque
+[DEBUG] rank 8/12 executing in processor albaricoque
+[DEBUG] rank 11/12 executing in processor albaricoque
+[DEBUG] rank 9/12 executing in processor albaricoque
+[DEBUG] rank 10/12 executing in processor albaricoque
+[DEBUG] rank 3/12 executing in processor albaricoque
+[DEBUG] rank 4/12 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 4.119566 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 2/12 executing in processor albaricoque
+[DEBUG] rank 8/12 executing in processor albaricoque
+[DEBUG] rank 11/12 executing in processor albaricoque
+[DEBUG] rank 9/12 executing in processor albaricoque
+[DEBUG] rank 0/12 executing in processor albaricoque
+[DEBUG] rank 3/12 executing in processor albaricoque
+[DEBUG] rank 6/12 executing in processor albaricoque
+[DEBUG] rank 1/12 executing in processor albaricoque
+[DEBUG] rank 4/12 executing in processor albaricoque
+[DEBUG] rank 5/12 executing in processor albaricoque
+[DEBUG] rank 10/12 executing in processor albaricoque
+[DEBUG] rank 7/12 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 4.146329 seconds
+
+ Performance counter stats for 'mpirun -np 12 ./fibonacci-ompd_out 50 30' (5 runs):
+
+         50,565.05 msec task-clock                #   10.582 CPUs utilized            ( +-  0.22% )
+            23,550      context-switches          #  466.555 /sec                     ( +-  0.93% )
+               953      cpu-migrations            #   18.880 /sec                     ( +-  0.97% )
+            92,744      page-faults               #    1.837 K/sec                    ( +-  0.56% )
+   129,591,078,948      cycles                    #    2.567 GHz                      ( +-  0.10% )  (50.07%)
+   382,825,468,772      instructions              #    2.96  insn per cycle           ( +-  0.14% )  (62.55%)
+    57,783,826,054      branches                  #    1.145 G/sec                    ( +-  0.18% )  (62.51%)
+       192,215,720      branch-misses             #    0.33% of all branches          ( +-  0.24% )  (62.52%)
+    89,816,203,139      L1-dcache-loads           #    1.779 G/sec                    ( +-  0.89% )  (52.87%)
+        47,988,458      L1-dcache-load-misses     #    0.05% of all L1-dcache accesses  ( +-  1.17% )  (26.08%)
+        13,758,958      LLC-loads                 #  272.582 K/sec                    ( +-  2.44% )  (25.11%)
+         3,569,860      LLC-load-misses           #   24.77% of all LL-cache accesses  ( +-  2.52% )  (37.59%)
+
+            4.7785 +- 0.0136 seconds time elapsed  ( +-  0.28% )
+

@@ -1,0 +1,148 @@
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+[DEBUG] rank 0/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 1/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 4/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 6/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 5/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 7/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 2/8 executing in processor triqui3.fi.upm.es
+[DEBUG] rank 3/8 executing in processor triqui3.fi.upm.es
+fibonacci(50) = 12586269025
+time: 7.894723 seconds
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+[DEBUG] rank 0/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 1/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 4/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 5/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 6/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 7/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 2/8 executing in processor triqui3.fi.upm.es
+[DEBUG] rank 3/8 executing in processor triqui3.fi.upm.es
+fibonacci(50) = 12586269025
+time: 7.911106 seconds
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+[DEBUG] rank 0/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 1/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 7/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 6/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 2/8 executing in processor triqui3.fi.upm.es
+[DEBUG] rank 4/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 3/8 executing in processor triqui3.fi.upm.es
+[DEBUG] rank 5/8 executing in processor triqui1.fi.upm.es
+fibonacci(50) = 12586269025
+time: 7.882224 seconds
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+[DEBUG] rank 0/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 1/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 4/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 5/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 6/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 7/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 2/8 executing in processor triqui3.fi.upm.es
+[DEBUG] rank 3/8 executing in processor triqui3.fi.upm.es
+fibonacci(50) = 12586269025
+time: 7.883630 seconds
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+Authorization required, but no authorization protocol specified
+
+[DEBUG] rank 0/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 1/8 executing in processor triqui2.fi.upm.es
+[DEBUG] rank 4/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 6/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 5/8 executing in processor triqui1.fi.upm.es
+[DEBUG] rank 7/8 executing in processor triqui4.fi.upm.es
+[DEBUG] rank 2/8 executing in processor triqui3.fi.upm.es
+[DEBUG] rank 3/8 executing in processor triqui3.fi.upm.es
+fibonacci(50) = 12586269025
+time: 7.881164 seconds
+
+ Performance counter stats for 'mpirun --hostfile hostfile -np 8 --mca btl_tcp_if_include team0.10 ./fibonacci-ompd_out 50 30' (5 runs):
+
+         16,767.75 msec task-clock                       #    1.810 CPUs utilized            ( +-  0.09% )
+             3,546      context-switches                 #  211.838 /sec                     ( +-  0.49% )
+               109      cpu-migrations                   #    6.512 /sec                     ( +-  1.52% )
+            56,469      page-faults                      #    3.373 K/sec                    ( +-  0.27% )
+    49,672,591,581      cycles                           #    2.967 GHz                      ( +-  0.13% )  (37.58%)
+    99,958,073,956      instructions                     #    2.01  insn per cycle           ( +-  0.21% )  (37.64%)
+    18,011,177,441      branches                         #    1.076 G/sec                    ( +-  0.23% )  (37.60%)
+       104,672,216      branch-misses                    #    0.58% of all branches          ( +-  0.38% )  (37.55%)
+    23,879,122,528      L1-dcache-loads                  #    1.427 G/sec                    ( +-  0.15% )  (37.56%)
+       318,069,134      L1-dcache-load-misses            #    1.33% of all L1-dcache accesses  ( +-  3.68% )  (37.51%)
+        22,948,060      LLC-loads                        #    1.371 M/sec                    ( +-  0.91% )  (37.49%)
+        12,787,009      LLC-load-misses                  #   54.36% of all LL-cache accesses  ( +-  1.52% )  (37.53%)
+
+             9.265 +- 0.118 seconds time elapsed  ( +-  1.27% )
+

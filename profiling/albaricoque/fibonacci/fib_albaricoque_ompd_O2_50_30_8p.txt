@@ -1,0 +1,78 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 4/8 executing in processor albaricoque
+[DEBUG] rank 0/8 executing in processor albaricoque
+[DEBUG] rank 1/8 executing in processor albaricoque
+[DEBUG] rank 2/8 executing in processor albaricoque
+[DEBUG] rank 3/8 executing in processor albaricoque
+[DEBUG] rank 5/8 executing in processor albaricoque
+[DEBUG] rank 6/8 executing in processor albaricoque
+[DEBUG] rank 7/8 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 5.987352 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 2/8 executing in processor albaricoque
+[DEBUG] rank 5/8 executing in processor albaricoque
+[DEBUG] rank 7/8 executing in processor albaricoque
+[DEBUG] rank 3/8 executing in processor albaricoque
+[DEBUG] rank 4/8 executing in processor albaricoque
+[DEBUG] rank 6/8 executing in processor albaricoque
+[DEBUG] rank 0/8 executing in processor albaricoque
+[DEBUG] rank 1/8 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 5.935926 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 7/8 executing in processor albaricoque
+[DEBUG] rank 1/8 executing in processor albaricoque
+[DEBUG] rank 5/8 executing in processor albaricoque
+[DEBUG] rank 4/8 executing in processor albaricoque
+[DEBUG] rank 2/8 executing in processor albaricoque
+[DEBUG] rank 0/8 executing in processor albaricoque
+[DEBUG] rank 3/8 executing in processor albaricoque
+[DEBUG] rank 6/8 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 5.931337 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 3/8 executing in processor albaricoque
+[DEBUG] rank 4/8 executing in processor albaricoque
+[DEBUG] rank 5/8 executing in processor albaricoque
+[DEBUG] rank 6/8 executing in processor albaricoque
+[DEBUG] rank 0/8 executing in processor albaricoque
+[DEBUG] rank 1/8 executing in processor albaricoque
+[DEBUG] rank 2/8 executing in processor albaricoque
+[DEBUG] rank 7/8 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 5.951604 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 4/8 executing in processor albaricoque
+[DEBUG] rank 5/8 executing in processor albaricoque
+[DEBUG] rank 0/8 executing in processor albaricoque
+[DEBUG] rank 1/8 executing in processor albaricoque
+[DEBUG] rank 3/8 executing in processor albaricoque
+[DEBUG] rank 2/8 executing in processor albaricoque
+[DEBUG] rank 6/8 executing in processor albaricoque
+[DEBUG] rank 7/8 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 5.935852 seconds
+
+ Performance counter stats for 'mpirun -np 8 ./fibonacci-ompd_out 50 30' (5 runs):
+
+         48,096.70 msec task-clock                #    7.342 CPUs utilized            ( +-  0.18% )
+            15,773      context-switches          #  327.287 /sec                     ( +-  0.21% )
+               164      cpu-migrations            #    3.403 /sec                     ( +-  6.05% )
+            82,283      page-faults               #    1.707 K/sec                    ( +-  0.10% )
+   132,109,781,606      cycles                    #    2.741 GHz                      ( +-  0.06% )  (50.08%)
+   392,061,564,519      instructions              #    2.96  insn per cycle           ( +-  0.06% )  (62.57%)
+    59,403,714,899      branches                  #    1.233 G/sec                    ( +-  0.08% )  (62.52%)
+       194,034,168      branch-misses             #    0.33% of all branches          ( +-  0.08% )  (62.52%)
+    97,747,023,937      L1-dcache-loads           #    2.028 G/sec                    ( +-  0.95% )  (52.88%)
+        36,924,938      L1-dcache-load-misses     #    0.04% of all L1-dcache accesses  ( +-  4.15% )  (26.57%)
+        10,282,588      LLC-loads                 #  213.362 K/sec                    ( +-  4.49% )  (25.06%)
+         3,567,484      LLC-load-misses           #   32.03% of all LL-cache accesses  ( +-  1.03% )  (37.57%)
+
+            6.5507 +- 0.0151 seconds time elapsed  ( +-  0.23% )
+

@@ -1,0 +1,58 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 2/4 executing in processor albaricoque
+[DEBUG] rank 3/4 executing in processor albaricoque
+[DEBUG] rank 0/4 executing in processor albaricoque
+[DEBUG] rank 1/4 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 12.054340 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 2/4 executing in processor albaricoque
+[DEBUG] rank 3/4 executing in processor albaricoque
+[DEBUG] rank 0/4 executing in processor albaricoque
+[DEBUG] rank 1/4 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 11.976673 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 2/4 executing in processor albaricoque
+[DEBUG] rank 0/4 executing in processor albaricoque
+[DEBUG] rank 1/4 executing in processor albaricoque
+[DEBUG] rank 3/4 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 12.045293 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 3/4 executing in processor albaricoque
+[DEBUG] rank 0/4 executing in processor albaricoque
+[DEBUG] rank 1/4 executing in processor albaricoque
+[DEBUG] rank 2/4 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 11.974868 seconds
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[DEBUG] rank 2/4 executing in processor albaricoque
+[DEBUG] rank 3/4 executing in processor albaricoque
+[DEBUG] rank 0/4 executing in processor albaricoque
+[DEBUG] rank 1/4 executing in processor albaricoque
+fibonacci(50) = 12586269025
+time: 11.952148 seconds
+
+ Performance counter stats for 'mpirun -np 4 ./fibonacci-ompd_out 50 30' (5 runs):
+
+         48,208.84 msec task-clock                #    3.828 CPUs utilized            ( +-  0.18% )
+             9,800      context-switches          #  202.416 /sec                     ( +-  0.22% )
+               102      cpu-migrations            #    2.107 /sec                     ( +- 18.64% )
+            84,455      page-faults               #    1.744 K/sec                    ( +-  0.07% )
+   151,297,893,173      cycles                    #    3.125 GHz                      ( +-  0.06% )  (50.06%)
+   447,519,649,186      instructions              #    2.96  insn per cycle           ( +-  0.32% )  (62.55%)
+    70,490,445,886      branches                  #    1.456 G/sec                    ( +-  0.39% )  (62.52%)
+       246,683,437      branch-misses             #    0.35% of all branches          ( +-  0.43% )  (62.51%)
+   118,172,089,989      L1-dcache-loads           #    2.441 G/sec                    ( +-  0.49% )  (62.32%)
+        27,900,779      L1-dcache-load-misses     #    0.02% of all L1-dcache accesses  ( +-  3.35% )  (25.03%)
+         7,377,845      LLC-loads                 #  152.387 K/sec                    ( +-  5.56% )  (25.02%)
+         3,392,318      LLC-load-misses           #   42.51% of all LL-cache accesses  ( +-  2.53% )  (37.51%)
+
+           12.5951 +- 0.0283 seconds time elapsed  ( +-  0.22% )
+

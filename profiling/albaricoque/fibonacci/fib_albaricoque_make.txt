@@ -1,0 +1,24 @@
+bison   -g -k -d -v -t -o preproparser.cc preproparser.yy
+preproparser.yy: warning: 1 shift/reduce conflict [-Wconflicts-sr]
+preproparser.yy: note: rerun with option '-Wcounterexamples' to generate conflict counterexamples
+g++ -c -Wall -g  preproparser.cc
+flex -p  -o preprolexer.cc preprolexer.ll
+%option yylineno entails a performance penalty ONLY on rules that can match newline characters
+g++ -c -Wall -g  preprolexer.cc
+bison   -g -k -d -v -t -o ompparser.cc ompparser.yy
+g++ -c -Wall -g  ompparser.cc
+flex -p  -o omplexer.cc omplexer.ll
+g++ -c -Wall -g  omplexer.cc
+bison   -g -k -d -v -t -o y.tab.cc C99-parser.yacc
+C99-parser.yacc: warning: 2 shift/reduce conflicts [-Wconflicts-sr]
+C99-parser.yacc: note: rerun with option '-Wcounterexamples' to generate conflict counterexamples
+g++ -c -Wall -g  y.tab.cc
+flex -p  -o lex.yy.cc C99-scanner.lex
+g++ -c -Wall -g  lex.yy.cc
+g++ -c -Wall -g  main.cc
+g++ -c -Wall -g  cluster_stack.c
+g++ -c -Wall -g  hash_map.c
+g++ -c -Wall -g  tasking_region.c
+g++ -c -Wall -g  task_async_block.c
+g++ -c -Wall -g  task_body_transform.c
+g++ -o fparse -Wall -g  preproparser.o preprolexer.o ompparser.o omplexer.o y.tab.o lex.yy.o main.o cluster_stack.o hash_map.o tasking_region.o task_async_block.o task_body_transform.o -ll

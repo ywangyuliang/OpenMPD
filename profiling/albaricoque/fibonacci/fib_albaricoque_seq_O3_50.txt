@@ -1,0 +1,28 @@
+fibonacci(50) = 12586269025
+time: 34.445591 seconds
+fibonacci(50) = 12586269025
+time: 34.402016 seconds
+fibonacci(50) = 12586269025
+time: 34.465580 seconds
+fibonacci(50) = 12586269025
+time: 34.414318 seconds
+fibonacci(50) = 12586269025
+time: 34.433876 seconds
+
+ Performance counter stats for './fibonacci-seq_out 50' (5 runs):
+
+         34,418.75 msec task-clock                #    1.000 CPUs utilized            ( +-  0.04% )
+             3,284      context-switches          #   95.433 /sec                     ( +-  3.11% )
+                 0      cpu-migrations            #    0.000 /sec                   
+                65      page-faults               #    1.889 /sec                     ( +-  0.75% )
+   109,640,964,927      cycles                    #    3.186 GHz                      ( +-  0.01% )  (50.00%)
+   331,588,237,139      instructions              #    3.03  insn per cycle           ( +-  0.02% )  (62.50%)
+    48,430,374,991      branches                  #    1.407 G/sec                    ( +-  0.03% )  (62.50%)
+       155,838,386      branch-misses             #    0.32% of all branches          ( +-  0.24% )  (62.50%)
+    69,101,490,037      L1-dcache-loads           #    2.008 G/sec                    ( +-  0.01% )  (62.47%)
+         1,147,304      L1-dcache-load-misses     #    0.00% of all L1-dcache accesses  ( +-  5.87% )  (25.00%)
+           173,253      LLC-loads                 #    5.035 K/sec                    ( +- 10.17% )  (25.00%)
+            46,205      LLC-load-misses           #   33.70% of all LL-cache accesses  ( +-  6.96% )  (37.50%)
+
+           34.4334 +- 0.0114 seconds time elapsed  ( +-  0.03% )
+

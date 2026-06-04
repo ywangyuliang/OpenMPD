@@ -1,0 +1,28 @@
+fibonacci(50) = 12586269025
+time: 5.601578 seconds
+fibonacci(50) = 12586269025
+time: 5.610061 seconds
+fibonacci(50) = 12586269025
+time: 5.698124 seconds
+fibonacci(50) = 12586269025
+time: 5.947664 seconds
+fibonacci(50) = 12586269025
+time: 5.693424 seconds
+
+ Performance counter stats for './fibonacci-omp_out 50 30' (5 runs):
+
+         42,189.53 msec task-clock                #    7.386 CPUs utilized            ( +-  0.64% )
+             4,024      context-switches          #   96.544 /sec                     ( +-  0.55% )
+               209      cpu-migrations            #    5.014 /sec                     ( +- 19.07% )
+               186      page-faults               #    4.463 /sec                     ( +-  5.10% )
+   115,168,301,701      cycles                    #    2.763 GHz                      ( +-  0.46% )  (49.71%)
+   335,358,462,236      instructions              #    2.95  insn per cycle           ( +-  0.06% )  (62.23%)
+    48,807,500,916      branches                  #    1.171 G/sec                    ( +-  0.06% )  (62.44%)
+       167,940,988      branch-misses             #    0.34% of all branches          ( +-  2.44% )  (62.38%)
+    74,066,005,446      L1-dcache-loads           #    1.777 G/sec                    ( +-  0.12% )  (49.86%)
+         2,509,832      L1-dcache-load-misses     #    0.00% of all L1-dcache accesses  ( +-  2.36% )  (29.26%)
+           552,070      LLC-loads                 #   13.245 K/sec                    ( +-  4.33% )  (25.98%)
+           101,045      LLC-load-misses           #   21.09% of all LL-cache accesses  ( +-  1.99% )  (38.00%)
+
+            5.7117 +- 0.0626 seconds time elapsed  ( +-  1.10% )
+

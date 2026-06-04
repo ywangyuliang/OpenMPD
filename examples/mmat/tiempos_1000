@@ -1,0 +1,156 @@
+./mmat_cpu_seq_ijk_gcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+
+ *******> Duracion total: 1.041811 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_cpu_seq_ijk_icx 1000 1000 1000
+**** MatMult: Version i,j,k *********
+
+ *******> Duracion total: 0.850995 segundos
+
+
+Valores de la matriz Resultado
+ 249340064.000000  241121232.000000  255425152.000000  246303648.000000  249415936.000000  250700912.000000  251012000.000000  246369616.000000 
+./mmat_cpu_seq_ijk_pgcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+
+ *******> Duracion total: 0.857700 segundos
+
+
+Valores de la matriz Resultado
+ 249340064.000000  241121216.000000  255425152.000000  246303552.000000  249415968.000000  250700896.000000  251012064.000000  246369632.000000 
+./mmat_cpu_seq_ikj_gcc 1000 1000 1000
+**** MatMult: Version i,k,j *********
+
+ *******> Duracion total: 0.199655 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_cpu_seq_ikj_icx 1000 1000 1000
+**** MatMult: Version i,k,j *********
+
+ *******> Duracion total: 0.201633 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_cpu_seq_ikj_pgcc 1000 1000 1000
+**** MatMult: Version i,k,j *********
+
+ *******> Duracion total: 0.154907 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_cpu_omp_ijk_gcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+
+ *******> Duracion total: 0.747850 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_cpu_omp_ijk_icx 1000 1000 1000
+**** MatMult: Version i,j,k *********
+
+ *******> Duracion total: 0.737264 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_cpu_omp_ijk_pgcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+
+ *******> Duracion total: 0.759462 segundos
+
+
+Valores de la matriz Resultado
+ 249340064.000000  241121216.000000  255425152.000000  246303552.000000  249415968.000000  250700896.000000  251012064.000000  246369632.000000 
+./mmat_cpu_acc_ijk_pgcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+
+ *******> Duracion total: 0.760595 segundos
+
+
+Valores de la matriz Resultado
+ 249340064.000000  241121216.000000  255425152.000000  246303552.000000  249415968.000000  250700896.000000  251012064.000000  246369632.000000 
+./mmat_cpu_omp_ikj_gcc 1000 1000 1000
+**** MatMult: Version OpenMP *********
+
+ *******> Duracion total: 0.023673 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_cpu_omp_ikj_icx 1000 1000 1000
+**** MatMult: Version OpenMP *********
+
+ *******> Duracion total: 0.037672 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_cpu_omp_ikj_pgcc 1000 1000 1000
+**** MatMult: Version OpenMP *********
+
+ *******> Duracion total: 0.019460 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_gpu_acc_ijk_gcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+********** Ejecucion Inicializando la GPU en el main
+
+ *******> Duracion total: 0.010475 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_gpu_acc_ijk_pgcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+********** Ejecucion Inicializando la GPU en el main
+
+ *******> Duracion total: 0.030981 segundos
+
+
+Valores de la matriz Resultado
+ 249340064.000000  241121216.000000  255425184.000000  246303584.000000  249415952.000000  250700896.000000  251012096.000000  246369616.000000 
+./mmat_gpu_omp_ijk_gcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+********** Ejecucion Inicializando la GPU en el main
+
+ *******> Duracion total: 0.020428 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./mmat_gpu_omp_ijk_pgcc 1000 1000 1000
+**** MatMult: Version i,j,k *********
+********** Ejecucion Inicializando la GPU en el main
+
+ *******> Duracion total: 0.008156 segundos
+
+
+Valores de la matriz Resultado
+ 249340096.000000  241121184.000000  255425264.000000  246303584.000000  249416080.000000  250700992.000000  251012192.000000  246369568.000000 
+./matrixmul_conMca_cuda_bin 1000 1000 1000
+
+ *******> Timne used: 0.010777 seconds (GPU 10.745792 ms)
+
+./matrixmul_conMca_cuda_nvcc 1000 1000 1000
+
+ *******> Timne used: 0.011014 seconds (GPU 10.981376 ms)
+
+./matrixmul_sinMca_cuda_bin 1000 1000 1000
+
+ *******> Timne used: 0.012501 seconds (GPU 12.470176 ms)
+
+./matrixmul_sinMca_cuda_nvcc 1000 1000 1000
+
+ *******> Timne used: 0.012712 seconds (GPU 12.678336 ms)
+

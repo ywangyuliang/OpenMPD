@@ -1,0 +1,35 @@
+echo time ./mmat_gccO0 700 700 700
+time ./mmat_gccO0 700 700 700
+echo time ./mmat_gccO2 700 700 700
+time ./mmat_gccO2 700 700 700
+echo time ./mmat_iccO0 700 700 700
+time ./mmat_iccO0 700 700 700
+echo time ./mmat_iccO2 700 700 700
+time ./mmat_iccO2 700 700 700
+
+echo time ./mmat-ikj_gccO0 700 700 700
+time ./mmat-ikj_gccO0 700 700 700
+echo time ./mmat-ikj_gccO2 700 700 700
+time ./mmat-ikj_gccO2 700 700 700
+echo time ./mmat-ikj_iccO0 700 700 700
+time ./mmat-ikj_iccO0 700 700 700
+echo time ./mmat-ikj_iccO2 700 700 700
+time ./mmat-ikj_iccO2 700 700 700
+
+echo time ./mmat_gccO0 1000 1000 1000
+time ./mmat_gccO0 1000 1000 1000
+echo time ./mmat_gccO2 1000 1000 1000
+time ./mmat_gccO2 1000 1000 1000
+echo time ./mmat_iccO0 1000 1000 1000
+time ./mmat_iccO0 1000 1000 1000
+echo time ./mmat_iccO2 1000 1000 1000
+time ./mmat_iccO2 1000 1000 1000
+
+echo time ./mmat-ikj_gccO0 1000 1000 1000
+time ./mmat-ikj_gccO0 1000 1000 1000
+echo time ./mmat-ikj_gccO2 1000 1000 1000
+time ./mmat-ikj_gccO2 1000 1000 1000
+echo time ./mmat-ikj_iccO0 1000 1000 1000
+time ./mmat-ikj_iccO0 1000 1000 1000
+echo time ./mmat-ikj_iccO2 1000 1000 1000
+time ./mmat-ikj_iccO2 1000 1000 1000

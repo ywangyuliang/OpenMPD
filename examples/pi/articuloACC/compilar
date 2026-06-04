@@ -1,0 +1,32 @@
+echo gcc-10 -fopenmp -Wall -O3 pi_ompd.c -o pi_ompd
+gcc-10 -fopenmp -Wall -O3 pi_ompd.c -o pi_ompd
+echo mpicc -O3 -Wall -fopenmp pi_ompd_mpi.c -o pi_ompd_mpi
+mpicc -O3 -Wall -fopenmp pi_ompd_mpi.c -o pi_ompd_mpi
+
+echo gcc-10 -Wall -O3 pi_omp.c -o pi_cpu_seq_gcc
+gcc-10 -Wall -O3 pi_omp.c -o pi_cpu_seq_gcc
+echo gcc-10 -fopenmp -Wall -O3 pi_omp.c -o pi_cpu_omp_gcc
+gcc-10 -fopenmp -Wall -O3 pi_omp.c -o pi_cpu_omp_gcc
+
+echo pgcc -fast -Minfo=all   pi_omp.c -o pi_cpu_seq_pgi
+/opt/pgi19.10/linux86-64-llvm/19.10/bin/pgcc -fast -Minfo=all   pi_omp.c -o pi_cpu_seq_pgi
+echo pgcc -fast -acc -Minfo=all -ta:multicore   pi_acc.c -o pi_cpu_acc_pgi
+/opt/pgi19.10/linux86-64-llvm/19.10/bin/pgcc -fast -acc -Minfo=all -ta:multicore   pi_acc.c -o pi_cpu_acc_pgi
+echo pgcc -fast -omp -Minfo=all -mp pi_omp.c -o pi_cpu_omp_pgi
+/opt/pgi19.10/linux86-64-llvm/19.10/bin/pgcc -fast -omp -Minfo=all -mp pi_omp.c -o pi_cpu_omp_pgi
+echo gcc-10 -g -O3 -fopenmp -foffload=nvptx-none -foffload=-misa=sm_35 -fcf-protection=none  -fno-stack-protector pi_omp_gpu.c -o pi_gpu_omp_gcc
+gcc-10 -g -O3 -fopenmp -foffload=nvptx-none -foffload=-misa=sm_35 -fcf-protection=none  -fno-stack-protector pi_omp_gpu.c -o pi_gpu_omp_gcc
+echo gcc-10 -g -O3 -fopenacc -foffload=nvptx-none -fcf-protection=none -foffload=-misa=sm_35 -fno-stack-protector pi_acc.c -o pi_gpu_acc_gcc
+gcc-10 -g -O3 -fopenacc -foffload=nvptx-none -fcf-protection=none -foffload=-misa=sm_35 -fno-stack-protector pi_acc.c -o pi_gpu_acc_gcc
+echo pgcc -fast -acc -Minfo=all -ta:tesla:cc35  pi_acc.c -o pi_gpu_acc_pgi
+/opt/pgi19.10/linux86-64-llvm/19.10/bin/pgcc -fast -acc -Minfo=all -ta:tesla:cc35  pi_acc.c -o pi_gpu_acc_pgi
+echo nvcc -O3 pi_cuda.cu -o pi_gpu_cuda
+/usr/local/cuda/bin/nvcc -O3 pi_cuda.cu -o pi_gpu_cuda
+
+
+echo source /opt/intel/oneapi/setvars.sh
+source /opt/intel/oneapi/setvars.sh
+echo icc  -Wall -O3 pi_omp.c -o pi_cpu_seq_icc
+icc  -Wall -O3 pi_omp.c -o pi_cpu_seq_icc
+echo icc  -Wall -qopenmp -O3 pi_omp.c -o pi_cpu_omp_icc
+icc  -Wall -qopenmp -O3 pi_omp.c -o pi_cpu_omp_icc

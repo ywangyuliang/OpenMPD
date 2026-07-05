@@ -5,10 +5,8 @@
 
 OpenMPD is a research project from **DATSI at UPM**, developed under a collaboration grant from the Spanish Ministry of Education.
 
-| | |
-|---|---|
-| **Authors** | Yuliang Wang, Caijie Wu |
-| **Supervisor** | Antonio García Dopico |
+**Authors:** Yuliang Wang, Caijie Wu  
+**Supervisor:** Antonio García Dopico
 
 ---
 
@@ -34,10 +32,8 @@ OpenMPD is a research project from **DATSI at UPM**, developed under a collabora
 
 OpenMPD es un proyecto de investigación del **DATSI de la UPM**, desarrollado bajo la beca de colaboración del Ministerio de Educación.
 
-| | |
-|---|---|
-| **Autores** | Yuliang Wang, Caijie Wu |
-| **Tutor** | Antonio García Dopico |
+**Autores:** Yuliang Wang, Caijie Wu  
+**Tutor:** Antonio García Dopico
 
 ---
 

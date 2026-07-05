@@ -8,6 +8,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import getpass
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -24,7 +25,7 @@ REL_TOLERANCE = 1e-7
 @dataclass
 class Config:
     cases_file: Path = Path(os.environ.get("CASES_FILE", SCRIPT_DIR / "cases.tsv"))
-    work_root: Path = Path(os.environ.get("WORK_ROOT", "/tmp/ompd-regression"))
+    work_root: Path = Path(os.environ.get("WORK_ROOT", f"/tmp/ompd-regression-{getpass.getuser()}"))
     run_slow: bool = os.environ.get("RUN_SLOW", "0") == "1"
     filter_family: str = os.environ.get("FILTER_FAMILY", "")
     case_timeout: int = int(os.environ.get("CASE_TIMEOUT", "30"))

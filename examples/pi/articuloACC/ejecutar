@@ -1,0 +1,24 @@
+echo PI con 2 a la 30 x factor iteraciones
+echo ./pi_cpu_seq_gcc $1
+./pi_cpu_seq_gcc $1
+echo ./pi_cpu_seq_icc $1
+./pi_cpu_seq_icc $1
+echo ./pi_cpu_seq_pgi $1
+./pi_cpu_seq_pgi $1
+echo ./pi_cpu_omp_gcc $1
+./pi_cpu_omp_gcc $1
+echo ./pi_cpu_omp_icc $1
+./pi_cpu_omp_icc $1
+echo ./pi_cpu_omp_pgi $1
+./pi_cpu_omp_pgi $1
+echo ./pi_cpu_acc_pgi $1
+./pi_cpu_acc_pgi $1
+echo ./pi_gpu_omp_gcc $1
+./pi_gpu_omp_gcc $1
+echo ./pi_gpu_acc_gcc $1
+./pi_gpu_acc_gcc $1
+echo ./pi_gpu_acc_pgi $1
+./pi_gpu_acc_pgi $1
+echo ./pi_gpu_cuda $1
+./pi_gpu_cuda $1
+

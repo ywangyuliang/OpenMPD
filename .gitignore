@@ -1,0 +1,67 @@
+# Hidden local directories
+.*/
+!.gitignore
+
+# Local scratch space
+tmp/
+temp/
+
+# Build products
+*.o
+*.out
+a.out
+out
+out_*
+*_out
+*_omp
+*_ompd
+*_seq
+OpenMpD/fparse
+
+# Flex and Bison generated files
+OpenMpD/y.*
+OpenMpD/lex.yy.*
+OpenMpD/ompparser.cc
+OpenMpD/ompparser.hh
+OpenMpD/ompparser.gv
+OpenMpD/ompparser.output
+OpenMpD/ompparser.dot
+OpenMpD/omplexer.cc
+OpenMpD/preproparser.cc
+OpenMpD/preproparser.hh
+OpenMpD/preproparser.gv
+OpenMpD/preproparser.output
+OpenMpD/preprolexer.cc
+OpenMpD/preprolexer.h
+
+# OMPD generated outputs
+OpenMpD/*_output.c
+OpenMpD/*_output_reference.c
+OpenMpD/output.c
+
+# Runtime logs and reports
+OpenMpD/log.txt
+OpenMpD/error.txt
+OpenMpD/sym_tables.txt
+OpenMpD/game_of_life_output_version_out.txt
+OpenMpD/heated_plate_*_result*.txt
+examples/**/log.txt
+examples/**/error.txt
+examples/**/sym_tables.txt
+
+# Generated example images and data
+OpenMpD/mandelbrot.ppm
+OpenMpD/julia_set.tga
+OpenMpD/*.pgm
+OpenMpD/*.png
+OpenMpD/*.bmp
+examples/**/mandelbrot.ppm
+examples/**/julia_set.tga
+examples/**/output_*.pgm
+examples/**/output_*.png
+
+# Local generated helper files
+OpenMpD/kind
+stdlib.h
+assert.h
+doc

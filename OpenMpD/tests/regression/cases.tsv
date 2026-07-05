@@ -1,0 +1,53 @@
+# name	family	ompd_source	sequential_source	np	args	libs	uses_runtime	profile	slow
+# One tab-separated row defines one end-to-end regression case:
+# - name: unique case id used for logs and temporary directories.
+# - family: group name for FILTER_FAMILY, for example base, tasking or halo.
+# - ompd_source: source passed to ./fparse.
+# - sequential_source: reference program compiled with gcc and compared against.
+# - np: MPI process count for the translated program; use - or 0 to run without mpirun.
+# - args: runtime arguments; use - when there are none.
+# - libs: extra compiler flags for generated code, such as -lm or -fopenmp -lm.
+# - uses_runtime: yes when generated tasking code must link src/ompd_runtime.c and src/hash_map.c.
+# - profile: result comparator; it checks computed output, not success text.
+# - slow: yes skips the case unless RUN_SLOW=1 is set.
+#
+# Placeholders:
+# - {repo}: repository root.
+# - {root}: OpenMpD directory.
+# - {case_dir}: temporary directory for this case.
+# - {output}: output file path expected by file-comparison profiles.
+#
+# Available profiles:
+# labeled:label             compare a numeric value with tolerance
+# integer:label             compare an exact integer value
+# rows:width:indexes        compare selected numeric columns from table rows
+# section:title             compare numbers printed after a section title
+# matrix-rows:title         compare rows like "Fila 0: ..."
+# board:title               compare a board made of O and .
+# numeric-grid              compare a rows/columns/values output file
+# binary:file               compare a file byte by byte
+#
+pi_test1	base	{repo}/examples/pi/pi_test1.c	{repo}/examples/pi/pi_seq.c	4	1	-lm	no	labeled:Pi	yes
+pi_ompd	base	{repo}/examples/pi/pi_ompd.c	{repo}/examples/pi/pi_seq.c	4	1	-lm	no	labeled:Pi	yes
+prueba_julia	base	{repo}/examples/julia/prueba_julia.c	{repo}/examples/julia/JuliaSEQ.c	4	128 -0.85 0.0 2.0 50	-lm	no	binary:julia_set.tga	yes
+JuliaOMPD	base	{repo}/examples/julia/JuliaOMPD.c	{repo}/examples/julia/JuliaSEQ.c	4	128 -0.85 0.0 2.0 50	-lm	no	binary:julia_set.tga	yes
+prueba_mmat_ijk	base	{repo}/examples/mat_ompd/prueba_mmat.c	{repo}/examples/mat_ompd/mat_seq.c	4	4 5 5 3	-lm	no	section:Valores de la matriz C	no
+prueba_mmat_ikj	base	{repo}/examples/mat_ompd/prueba_mmat.c	{repo}/examples/mat_ompd/mat_seq.c	4	4 5 5 3	-lm	no	section:Valores de la matriz C	no
+mat_ompd_ijk	base	{repo}/examples/mat_ompd/mat_ompd.c	{repo}/examples/mat_ompd/mat_seq.c	4	8 8 8 8	-lm	no	section:Valores de la matriz C	yes
+mat_ompd_ikj	base	{repo}/examples/mat_ompd/mat_ompd.c	{repo}/examples/mat_ompd/mat_seq.c	4	8 8 8 8	-lm	no	section:Valores de la matriz C	yes
+prueba_mandel	base	{repo}/examples/mandelbrot/prueba_mandel.c	{repo}/examples/mandelbrot/prueba_mandel.c	4	-	-lm	no	integer:c_max	yes
+Mandelbrot_OMPD	base	{repo}/examples/mandelbrot/Mandelbrot-OMPD.c	{repo}/examples/mandelbrot/Mandelbrot-OMPD.c	4	-	-lm	no	binary:mandelbrot.ppm	yes
+mdOMPD	base	{repo}/examples/MD/mdOMPD.c	{repo}/examples/MD/mdSEQ.c	4	3 80 10 0.01	-lm	no	rows:4:0,1,2,3	yes
+fibonacci	tasking	{repo}/examples/tasks/fibonacci/fibonacci-ompd.c	{repo}/examples/tasks/fibonacci/fibonacci-seq.c	4	20 10	-	yes	integer:fibonacci(20)	no
+binomial	tasking	{repo}/examples/tasks/binomial/binomial_task_ompd.c	{repo}/examples/tasks/binomial/binomial_seq.c	4	20 10 10	-	yes	integer:binomial(20, 10)	no
+pi_task	tasking	{repo}/examples/tasks/pi_task/pi_task_ompd.c	{repo}/examples/tasks/pi_task/pi_task_seq.c	4	100000	-lm	yes	labeled:pi	no
+simpson_task	tasking	{repo}/examples/tasks/simpson/simpson_task_ompd.c	{repo}/examples/tasks/simpson/simpson_seq.c	4	1e-6 12 6	-lm	yes	labeled:result	no
+pipeline	tasking	{repo}/examples/tasks/pipeline/pipeline_ompd.c	{repo}/examples/tasks/pipeline/pipeline_seq.c	5	-	-	yes	indexed-values	no
+distribute	halo	{repo}/examples/halo/distribute_OMPD.c	{repo}/examples/halo/distribute_OMPD.c	4	-	-fopenmp -lm	no	matrix-rows:Matriz final filtered tras gather:	no
+game_of_life	halo	{repo}/examples/game_of_life/game_of_life_OMPD.c	{repo}/examples/game_of_life/game_of_life_SEQ.c	4	10 10 4 1	-fopenmp -lm	no	board:Estado final:	no
+heated_plate	halo	{repo}/examples/Heated/heated_plate_OMPD.c	{repo}/examples/Heated/heated_plate_SEQ.c	4	1 {output}	-fopenmp -lm	no	numeric-grid	no
+image_halo_gaussian_3	halo	{repo}/examples/image_halo/image_halo_OMPD.c	{repo}/examples/image_halo/image_halo_SEQ.c	4	gaussian 3 {repo}/examples/image_halo/lenna.pgm {output}	-fopenmp -lm	no	binary:result.pgm	no
+image_halo_gaussian_5	halo	{repo}/examples/image_halo/image_halo_OMPD.c	{repo}/examples/image_halo/image_halo_SEQ.c	4	gaussian 5 {repo}/examples/image_halo/lenna.pgm {output}	-fopenmp -lm	no	binary:result.pgm	no
+image_halo_sobel_3	halo	{repo}/examples/image_halo/image_halo_OMPD.c	{repo}/examples/image_halo/image_halo_SEQ.c	4	sobel 3 {repo}/examples/image_halo/lenna.pgm {output}	-fopenmp -lm	no	binary:result.pgm	no
+image_halo_sobel_5	halo	{repo}/examples/image_halo/image_halo_OMPD.c	{repo}/examples/image_halo/image_halo_SEQ.c	4	sobel 5 {repo}/examples/image_halo/lenna.pgm {output}	-fopenmp -lm	no	binary:result.pgm	no
+input_heated_plate	halo	{repo}/examples/Heated/input.c	{repo}/examples/Heated/input.c	4	1 {output}	-fopenmp -lm	no	numeric-grid	no

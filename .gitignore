@@ -11,11 +11,7 @@ temp/
 *.out
 a.out
 out
-out_*
 *_out
-*_omp
-*_ompd
-*_seq
 OpenMpD/fparse
 
 # Flex and Bison generated files
@@ -59,9 +55,3 @@ examples/**/mandelbrot.ppm
 examples/**/julia_set.tga
 examples/**/output_*.pgm
 examples/**/output_*.png
-
-# Local generated helper files
-OpenMpD/kind
-stdlib.h
-assert.h
-doc

@@ -46,6 +46,7 @@ gettimeofday(&t2, NULL);
 segundos = (((t2.tv_usec - t1.tv_usec)/1000000.0f)  + (t2.tv_sec - t1.tv_sec));
 
 printf("Pi %25.23f, calc con %ld pasos en %f segundos\n", pi,num_steps,segundos);
+printf("OMPD_CALC_TIME_SECONDS=%.9f\n", segundos);
 printf("Pi es %25.23f, Error relativo %10.8e\n", PI25DT, (double)100 * (pi - PI25DT)/PI25DT);
 
 return(0);

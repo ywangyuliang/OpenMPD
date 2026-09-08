@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <omp.h>
 
 #define ALIVE 1
 #define DEAD  0
@@ -32,7 +32,6 @@ void reset_directory(const char *dirname) {
 void initialize_random(int board[rows][cols], double alive_prob) {
     int i, j;
 
-    #pragma omp parallel for private(i, j)
     for (i = 1; i < rows - 1; i++) {
         for (j = 1; j < cols - 1; j++) {
             double r = (double)rand() / (double)RAND_MAX;
@@ -134,18 +133,20 @@ int main(int argc, char *argv[]) {
     /*
      * show_Mode = 0 --> printing disabled
      * show_Mode = 1 --> print initial and final states
+     * show_Mode = 2 --> save each iteration in the 'frames' directory
      */
     int show_Mode;
     int iter;
 
-    MPI_Request reqs;
-    MPI_Status status;
-
     if (argc != 5) {
-        printf("Uso: %s [rows] [cols] [iterations] [show_Mode]\nshow_Mode = 0 --> no se habilita impresion\nshow_Mode = 1 --> se imprime estado inicial y final\nshow_Mode = 2 --> se guarda el estado de cada iteracion en el directorio 'frames'\n",argv[0]);
+        fprintf(stderr, "Uso: %s [rows] [cols] [iterations] [show_Mode]\n"
+                            "show_Mode = 0 --> no se habilita impresion\n"
+                            "show_Mode = 1 --> se imprime estado inicial y final\n"
+                            "show_Mode = 2 --> se guarda el estado de cada iteracion en el directorio 'frames'\n"
+                            , argv[0]);
         exit(EXIT_FAILURE);
     }
-
+    /* Read arguments */
     rows = atoi(argv[1]);
     cols = atoi(argv[2]);
     iterations = atoi(argv[3]);
@@ -163,31 +164,34 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Error: iterations debe ser > 0\n");
         exit(EXIT_FAILURE);
     }
+
     if (show_Mode < 0 || show_Mode > 2) {
         fprintf(stderr, "Error: show_Mode debe ser 0, 1 o 2\n");
         exit(EXIT_FAILURE);
     }
-
-    #pragma omp cluster broad(rows,cols)
 
     int current[rows][cols];
     int next[rows][cols];
 
     memset(current, 0, sizeof(current));
     memset(next, 0, sizeof(next));
-
     srand(42);
 
-    if (show_Mode == 2) {
+    if(show_Mode == 2)
         reset_directory("frames");
-    }
 
     /* Choose one initialization */
     initialize_glider(current);
+    /* Print initial state */
     if (show_Mode == 1) {
         printf("Estado inicial:\n");
         print_table(rows, cols, current);
         printf("\n");
+    }
+
+    /* Store initial state */
+    if (show_Mode == 2) {
+        save_frame("frames", 0, current);
     }
 
     #ifdef _OPENMP
@@ -196,46 +200,44 @@ int main(int argc, char *argv[]) {
     gettimeofday(&tv_start, NULL);
     #endif
 
-    #pragma omp cluster broad(iterations,show_Mode) broad(current[rows][cols]) gather(current[rows][cols]) halo(current[rows][cols]:1*cols)
-    {
-        for (iter = 1; iter <= iterations; iter++) {
-            int i, j;
-            int neighbors;
+    for (iter = 1; iter <= iterations; iter++) {
+        int i, j;
+        int neighbors;
 
-            /* Compute next from current */
-            #pragma omp cluster distribute
-            #pragma omp parallel for private(i, j, neighbors)
-            for (i = 1; i < rows - 1; i++) {
-                for (j = 1; j < cols - 1; j++) {
-                    neighbors =
-                        current[i - 1][j - 1] + current[i - 1][j] + current[i - 1][j + 1] +
-                        current[i][j - 1]     +                     current[i][j + 1] +
-                        current[i + 1][j - 1] + current[i + 1][j] + current[i + 1][j + 1];
+        /* Compute next from current */
+        for (i = 1; i < rows - 1; i++) {
+            for (j = 1; j < cols - 1; j++) {
+                neighbors =
+                    current[i - 1][j - 1] + current[i - 1][j] + current[i - 1][j + 1] +
+                    current[i][j - 1]     +                     current[i][j + 1] +
+                    current[i + 1][j - 1] + current[i + 1][j] + current[i + 1][j + 1];
 
-                    /* A live cell dies with fewer than 2 or more than 3 live neighbors */
-                    if (current[i][j] == ALIVE) {
-                        if (neighbors < 2 || neighbors > 3) {
-                            next[i][j] = DEAD;
-                        } else {
-                            next[i][j] = ALIVE;
-                        }
-                    } else { /* A dead cell becomes alive with exactly 3 live neighbors */
-                        if (neighbors == 3) {
-                            next[i][j] = ALIVE;
-                        } else {
-                            next[i][j] = DEAD;
-                        }
+                /* A live cell dies with fewer than 2 or more than 3 live neighbors */
+                if (current[i][j] == ALIVE) {
+                    if (neighbors < 2 || neighbors > 3) {
+                        next[i][j] = DEAD;
+                    } else {
+                        next[i][j] = ALIVE;
+                    }
+                } else { /* A dead cell becomes alive with exactly 3 live neighbors */
+                    if (neighbors == 3) {
+                        next[i][j] = ALIVE;
+                    } else {
+                        next[i][j] = DEAD;
                     }
                 }
             }
+        }
 
-            /* Copy next into current */
-            #pragma omp cluster distribute update halo(current[rows][cols]:1*cols)
-            #pragma omp parallel for private(i,j)
-            for (i = 1; i < rows - 1; i++) {
-                for (j = 1; j < cols - 1; j++) {
-                    current[i][j] = next[i][j];
-                }
+        /* Store frames when show_Mode == 2 */
+        if (show_Mode == 2) {
+            save_frame("frames", iter, next);
+        }
+
+        /* Copy next into current */
+        for (int cont_row = 1; cont_row < rows - 1; cont_row++) {
+            for (int cont_col = 1; cont_col < cols - 1; cont_col++) {
+                current[cont_row][cont_col] = next[cont_row][cont_col];
             }
         }
     }
@@ -250,11 +252,13 @@ int main(int argc, char *argv[]) {
     #endif
 
     printf("Execution time: %lg seconds\n", run_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 
+    /* Print final state when show_Mode == 1 */
     if (show_Mode == 1) {
         printf("Estado final:\n");
         print_table(rows, cols, current);
-        save_board("game_of_life_output_version_out.txt", current);
+        save_board("game_of_life_SEQ_version_out.txt", current);
     }
 
     return 0;

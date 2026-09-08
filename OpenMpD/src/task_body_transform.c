@@ -31,7 +31,8 @@ typedef enum {
 	TBS_EMPTY,
 	TBS_EXPR,
 	TBS_COMPOUND,
-	TBS_DECL
+	TBS_DECL,
+	TBS_IF
 } task_body_stmt_kind_t;
 
 typedef struct {
@@ -62,6 +63,8 @@ struct task_body_stmt {
 
 	task_body_expr_t *expr;
 	task_body_stmt_list_t *items;
+	task_body_stmt_t *then_stmt;
+	task_body_stmt_t *else_stmt;
 
 	task_body_decl_item_t *decls;
 	int declaration_count;
@@ -532,6 +535,20 @@ task_body_stmt_t *task_body_stmt_make_compound(task_body_stmt_list_t *items){
 	return stmt;
 }
 
+task_body_stmt_t *task_body_stmt_make_if(task_body_expr_t *condition, task_body_stmt_t *then_stmt, task_body_stmt_t *else_stmt){
+	task_body_stmt_t *stmt;
+
+	stmt = task_body_stmt_create(TBS_IF);
+	if(stmt == NULL){
+		return NULL;
+	}
+
+	stmt->expr = condition;
+	stmt->then_stmt = then_stmt;
+	stmt->else_stmt = else_stmt;
+	return stmt;
+}
+
 task_body_stmt_t *task_body_stmt_make_declaration(void){
 	return task_body_stmt_create(TBS_DECL);
 }
@@ -605,6 +622,11 @@ void task_body_stmt_destroy(task_body_stmt_t *stmt){
 		task_body_stmt_list_destroy(stmt->items);
 		stmt->items = NULL;
 	}
+
+	task_body_stmt_destroy(stmt->then_stmt);
+	stmt->then_stmt = NULL;
+	task_body_stmt_destroy(stmt->else_stmt);
+	stmt->else_stmt = NULL;
 
 	for(i = 0; i < stmt->declaration_count; i++){
 		free(stmt->decls[i].name);
@@ -855,6 +877,25 @@ static char *emit_original_stmt(task_body_stmt_t *stmt){
 				}
 			}
 			sb_append(&sb, "}");
+			break;
+		}
+
+		case TBS_IF: {
+			char *condition_text = emit_original_expr(stmt->expr);
+			char *then_text = emit_original_stmt(stmt->then_stmt);
+			sb_append(&sb, "if (");
+			sb_append(&sb, condition_text);
+			sb_append(&sb, ") ");
+			sb_append(&sb, then_text);
+			free(condition_text);
+			free(then_text);
+
+			if(stmt->else_stmt != NULL){
+				char *else_text = emit_original_stmt(stmt->else_stmt);
+				sb_append(&sb, " else ");
+				sb_append(&sb, else_text);
+				free(else_text);
+			}
 			break;
 		}
 	}
@@ -1497,6 +1538,22 @@ static void emit_stmt(task_body_state_t *state, task_body_stmt_t *stmt, sb_t *ou
 			task_body_pop_scope(state);
 			sb_append(out, "    }\n");
 			break;
+
+		case TBS_IF: {
+			char *condition_text = emit_read_expr(state, stmt->expr);
+
+			sb_append(out, "    if (");
+			sb_append(out, condition_text);
+			sb_append(out, ")\n");
+			free(condition_text);
+			emit_stmt(state, stmt->then_stmt, out);
+
+			if(stmt->else_stmt != NULL){
+				sb_append(out, "    else\n");
+				emit_stmt(state, stmt->else_stmt, out);
+			}
+			break;
+		}
 	}
 }
 

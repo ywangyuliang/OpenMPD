@@ -131,11 +131,13 @@ float tiempo_trans;
 #ifdef _OPENMP
 		run_time = omp_get_wtime() - start_time;
 		printf("\n Tiempo Mandelbrot = %f seconds\n", run_time);
+		printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 #else
 		gettimeofday(&tv_end, NULL);
 		tiempo_trans=(tv_end.tv_sec - tv_start.tv_sec) * 1000000 +
 		  (tv_end.tv_usec - tv_start.tv_usec); /* microseconds */
 		printf("Tiempo Mandelbrot = %f segundos\n", tiempo_trans/1000000);
+		printf("OMPD_CALC_TIME_SECONDS=%.9f\n", tiempo_trans/1000000);
 #endif
 
   printf ( "\n" );

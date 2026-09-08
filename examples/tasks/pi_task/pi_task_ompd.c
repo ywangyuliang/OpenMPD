@@ -71,6 +71,7 @@ int main(int argc, char **argv)
     printf("num_steps = %ld\n", num_steps);
     printf("pi = %.15f\n", pi);
     printf("time = %.6f seconds\n", elapsed_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", elapsed_time);
 
     return 0;
 }

@@ -129,6 +129,7 @@ int main(int argc, char *argv[])
     printf("%8d  %lg\n", iterations, diff);
     printf("Error tolerance achieved.\n");
     printf("Elapsed time = %lg s\n", run_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
     printf("Solution written to %s\n", output_filename);
     printf("INPUT_HALO: Normal end of execution.\n");
 

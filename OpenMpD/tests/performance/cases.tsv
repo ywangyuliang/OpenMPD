@@ -1,0 +1,20 @@
+# name	family	variants	ompd_source	sequential_source	openmp_source	mpi_source	arguments	libraries	uses_runtime
+pi_test1	base	seq,omp,ompd,ompd_omp	{repo}/examples/pi/pi_test1.c	{repo}/examples/pi/pi_seq.c	{repo}/examples/pi/pi_omp.c	-	1	-lm	no
+pi_ompd	base	seq,omp,ompd,ompd_omp	{repo}/examples/pi/pi_ompd.c	{repo}/examples/pi/pi_seq.c	{repo}/examples/pi/pi_omp.c	-	1	-lm	no
+prueba_julia	base	seq,omp,mpi,ompd,ompd_omp	{repo}/examples/julia/prueba_julia.c	{repo}/examples/julia/JuliaSEQ.c	{repo}/examples/julia/JuliaOMP.c	{repo}/examples/julia/JuliaMPI.c	1000 -0.85 0.0 2.0 2000	-lm	no
+JuliaOMPD	base	seq,omp,mpi,ompd,ompd_omp	{repo}/examples/julia/JuliaOMPD.c	{repo}/examples/julia/JuliaSEQ.c	{repo}/examples/julia/JuliaOMP.c	{repo}/examples/julia/JuliaMPI.c	1000 -0.85 0.0 2.0 2000	-lm	no
+prueba_mmat	base	seq,omp,ompd,ompd_omp	{repo}/examples/mat_ompd/prueba_mmat.c	{repo}/examples/mat_ompd/mat_seq.c	{repo}/examples/mat_ompd/mat_omp.c	-	1536 1536 1536 1536	-	no
+mat_ompd	base	seq,omp,ompd,ompd_omp	{repo}/examples/mat_ompd/mat_ompd.c	{repo}/examples/mat_ompd/mat_seq.c	{repo}/examples/mat_ompd/mat_omp.c	-	1536 1536 1536 1536	-	no
+prueba_mandel	base	seq,omp,ompd,ompd_omp	{repo}/examples/mandelbrot/prueba_mandel.c	{repo}/examples/mandelbrot/Mandelbrot-SEQ.c	{repo}/examples/mandelbrot/Mandelbrot-OMP.c	-	-	-lm	no
+Mandelbrot_OMPD	base	seq,omp,ompd,ompd_omp	{repo}/examples/mandelbrot/Mandelbrot-OMPD.c	{repo}/examples/mandelbrot/Mandelbrot-SEQ.c	{repo}/examples/mandelbrot/Mandelbrot-OMP.c	-	-	-lm	no
+mdOMPD	base	seq,omp,ompd,ompd_omp	{repo}/examples/MD/mdOMPD.c	{repo}/examples/MD/mdSEQ.c	{repo}/examples/MD/mdOMP.c	-	3 800 700 0.01	-lm	no
+fibonacci	tasking	seq,omp,ompd	{repo}/examples/tasks/fibonacci/fibonacci-ompd.c	{repo}/examples/tasks/fibonacci/fibonacci-seq.c	{repo}/examples/tasks/fibonacci/fibonacci-omp.c	-	50 30	-	yes
+binomial	tasking	seq,omp,ompd	{repo}/examples/tasks/binomial/binomial_task_ompd.c	{repo}/examples/tasks/binomial/binomial_seq.c	{repo}/examples/tasks/binomial/binomial_omp.c	-	35 17 20	-	yes
+pi_task	tasking	seq,omp,ompd	{repo}/examples/tasks/pi_task/pi_task_ompd.c	{repo}/examples/tasks/pi_task/pi_task_seq.c	{repo}/examples/tasks/pi_task/pi_task_omp.c	-	1000000000	-lm	yes
+simpson_task	tasking	seq,omp,ompd	{repo}/examples/tasks/simpson/simpson_task_ompd.c	{repo}/examples/tasks/simpson/simpson_seq.c	{repo}/examples/tasks/simpson/simpson_omp.c	-	1e-8 20 10	-lm	yes
+game_of_life	halo	seq,omp,ompd,ompd_omp	{repo}/examples/halo/game_of_life/game_of_life_OMPD.c	{repo}/examples/halo/game_of_life/game_of_life_SEQ.c	{repo}/examples/halo/game_of_life/game_of_life_OMP.c	-	1000 1000 8000 0	-lm	no
+heated_plate	halo	seq,omp,mpi,mpi_omp,ompd,ompd_omp	{repo}/examples/halo/heated_plate/heated_plate_OMPD.c	{repo}/examples/halo/heated_plate/heated_plate_SEQ.c	{repo}/examples/halo/heated_plate/heated_plate_OMP.c	{repo}/examples/halo/heated_plate/heated_plate_MPI.c	0.001 {output}	-lm	no
+image_halo_gaussian_3	halo	seq,omp,ompd,ompd_omp	{repo}/examples/halo/image_filters/image_halo_OMPD.c	{repo}/examples/halo/image_filters/image_halo_SEQ.c	{repo}/examples/halo/image_filters/image_halo_OMP.c	-	gaussian 3 {repo}/examples/halo/image_filters/lenna.pgm {output} 1000	-lm	no
+image_halo_gaussian_5	halo	seq,omp,ompd,ompd_omp	{repo}/examples/halo/image_filters/image_halo_OMPD.c	{repo}/examples/halo/image_filters/image_halo_SEQ.c	{repo}/examples/halo/image_filters/image_halo_OMP.c	-	gaussian 5 {repo}/examples/halo/image_filters/lenna.pgm {output} 1000	-lm	no
+image_halo_sobel_3	halo	seq,omp,ompd,ompd_omp	{repo}/examples/halo/image_filters/image_halo_OMPD.c	{repo}/examples/halo/image_filters/image_halo_SEQ.c	{repo}/examples/halo/image_filters/image_halo_OMP.c	-	sobel 3 {repo}/examples/halo/image_filters/lenna.pgm {output} 1000	-lm	no
+image_halo_sobel_5	halo	seq,omp,ompd,ompd_omp	{repo}/examples/halo/image_filters/image_halo_OMPD.c	{repo}/examples/halo/image_filters/image_halo_SEQ.c	{repo}/examples/halo/image_filters/image_halo_OMP.c	-	sobel 5 {repo}/examples/halo/image_filters/lenna.pgm {output} 1000	-lm	no

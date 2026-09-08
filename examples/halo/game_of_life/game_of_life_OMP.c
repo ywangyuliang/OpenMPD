@@ -230,6 +230,7 @@ int main(int argc, char *argv[]) {
     #endif
 
     printf("Execution time: %lg seconds\n", run_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 
     /* Print final state when show_Mode == 1 */
     if (show_Mode == 1) {

@@ -189,7 +189,7 @@ static void ompd_reserve_task_global_definitions_slot(){
 %type<symbol_list> init_declarator_list parameter_type_list parameter_list struct_declaration_list struct_declarator_list struct_declaration
 %type<symbol_list> declaration_list identifier_list declaration
 
-%type<parse_node> statement compound_statement expression_statement
+%type<parse_node> statement compound_statement expression_statement selection_statement
 %type<parse_node> block_item block_item_list
 %type<parse_node> argument_expression_list task_body_statement_head
 
@@ -525,9 +525,37 @@ shift_expression
 relational_expression
 	: shift_expression {$$ = $1;}
 	| relational_expression '<' shift_expression
+	{
+	if(tasking_parse_is_in_body()){
+	$$ = task_make_expr_symbol(task_body_expr_make_binary("<", task_expr_of($1), task_expr_of($3), "int"), "int");
+	} else {
+	$$ = $1;
+	}
+	}
 	| relational_expression '>' shift_expression
+	{
+	if(tasking_parse_is_in_body()){
+	$$ = task_make_expr_symbol(task_body_expr_make_binary(">", task_expr_of($1), task_expr_of($3), "int"), "int");
+	} else {
+	$$ = $1;
+	}
+	}
 	| relational_expression LE_OP shift_expression
+	{
+	if(tasking_parse_is_in_body()){
+	$$ = task_make_expr_symbol(task_body_expr_make_binary("<=", task_expr_of($1), task_expr_of($3), "int"), "int");
+	} else {
+	$$ = $1;
+	}
+	}
 	| relational_expression GE_OP shift_expression
+	{
+	if(tasking_parse_is_in_body()){
+	$$ = task_make_expr_symbol(task_body_expr_make_binary(">=", task_expr_of($1), task_expr_of($3), "int"), "int");
+	} else {
+	$$ = $1;
+	}
+	}
 	;
 
 equality_expression
@@ -1210,11 +1238,7 @@ statement
 		}
 	| task_body_statement_head { table.enter_scope(); } selection_statement { table.exit_scope(); }
 		{
-			if(tasking_parse_is_in_body()){
-				fprintf(stderr, "Error: selection_statement not supported yet in task body\n");
-				exit(EXIT_FAILURE);
-			}
-			$$ = NULL;
+			$$ = $3;
 			task_body_finish_if_root((task_body_stmt_t *)$$);
 		}
 	| task_body_statement_head { table.enter_scope(); } iteration_statement { table.exit_scope(); }
@@ -1377,8 +1401,29 @@ expression_statement
 
 selection_statement
 	: IF '(' expression ')' statement %prec LOWER_THAN_ELSE
+	{
+	if(tasking_parse_is_in_body()){
+	$$ = task_body_stmt_make_if(task_expr_of($3), (task_body_stmt_t *)$5, NULL);
+	} else {
+	$$ = NULL;
+	}
+	}
 	| IF '(' expression ')' statement ELSE { table.exit_scope(); table.enter_scope(); } statement
+	{
+	if(tasking_parse_is_in_body()){
+	$$ = task_body_stmt_make_if(task_expr_of($3), (task_body_stmt_t *)$5, (task_body_stmt_t *)$8);
+	} else {
+	$$ = NULL;
+	}
+	}
 	| SWITCH '(' expression ')' statement
+	{
+	if(tasking_parse_is_in_body()){
+	fprintf(stderr, "Error: switch statement not supported yet in task body\n");
+	exit(EXIT_FAILURE);
+	}
+	$$ = NULL;
+	}
 	;
 
 iteration_statement

@@ -23,6 +23,25 @@ long binomial_seq(int n, int k)
     return binomial_seq(n - 1, k - 1) + binomial_seq(n - 1, k);
 }
 
+long binomial_formula(int n, int k)
+{
+    long result = 1;
+
+    if (k < 0 || k > n) {
+        return 0;
+    }
+
+    if (k > n - k) {
+        k = n - k;
+    }
+
+    for (int i = 1; i <= k; i++) {
+        result = result * (n - k + i) / i;
+    }
+
+    return result;
+}
+
 long binomial(int n, int k, int thresh)
 {
     long left, right;
@@ -97,12 +116,13 @@ int main(int argc, const char **argv)
                     + (t2.tv_sec - t1.tv_sec));
 #endif
 
-    expected = binomial_seq(n, k);
+    expected = binomial_formula(n, k);
 
     fprintf(stdout, "binomial(%d, %d) = %ld\n", n, k, res);
     fprintf(stdout, "expected = %ld\n", expected);
     fprintf(stdout, "correct = %s\n", res == expected ? "yes" : "no");
     fprintf(stdout, "time: %f seconds\n", elapsed_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", elapsed_time);
 
     return 0;
 }

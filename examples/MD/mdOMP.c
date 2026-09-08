@@ -138,6 +138,7 @@ int main ( int argc, char *argv[] )
   /* ctime = cpu_time ( ) - ctime; */
   double run_time = omp_get_wtime() - start_time;
   printf("\n Tiempo =  %f segundos\n",run_time);
+  printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 
   printf ( "\n" );
   free ( acc );
@@ -168,7 +169,52 @@ void compute ( int np, int nd, double pos[], double vel[], double mass,
   pe = 0.0;
   ke = 0.0;
 
-  #pragma omp parallel for simd schedule(static)  private(i,k,j,d2,d,rij) reduction(+:pe) reduction(+:ke)
+  if ( nd == 3 )
+  {
+    #pragma omp parallel for schedule(static) private(k,j,d,d2) reduction(+:pe) reduction(+:ke)
+    for ( k = 0; k < np; k++ )
+    {
+      int k3 = 3 * k;
+      double xk = pos[k3];
+      double yk = pos[k3+1];
+      double zk = pos[k3+2];
+      double fx = 0.0;
+      double fy = 0.0;
+      double fz = 0.0;
+
+      for ( j = 0; j < np; j++ )
+      {
+        if ( k != j )
+        {
+          int j3 = 3 * j;
+          double dx = xk - pos[j3];
+          double dy = yk - pos[j3+1];
+          double dz = zk - pos[j3+2];
+          double sin_d2;
+          double scale;
+
+          d = sqrt ( dx * dx + dy * dy + dz * dz );
+          d2 = d < PI2 ? d : PI2;
+          sin_d2 = sin ( d2 );
+          pe = pe + 0.5 * sin_d2 * sin_d2;
+          scale = sin ( 2.0 * d2 ) / d;
+          fx = fx - dx * scale;
+          fy = fy - dy * scale;
+          fz = fz - dz * scale;
+        }
+      }
+
+      f[k3] = fx;
+      f[k3+1] = fy;
+      f[k3+2] = fz;
+      ke = ke + vel[k3] * vel[k3]
+        + vel[k3+1] * vel[k3+1]
+        + vel[k3+2] * vel[k3+2];
+    }
+  }
+  else
+  {
+  #pragma omp parallel for simd schedule(static) private(i,k,j,d2,d,rij) reduction(+:pe) reduction(+:ke)
   for ( k = 0; k < np; k++ )
   {
 /* Compute the potential energy and forces */
@@ -179,7 +225,13 @@ void compute ( int np, int nd, double pos[], double vel[], double mass,
     {
       if ( k != j )
       {
-        d = dist ( nd, pos+k*nd, pos+j*nd, rij );
+        d = 0.0;
+        for ( i = 0; i < nd; i++ )
+        {
+          rij[i] = pos[i+k*nd] - pos[i+j*nd];
+          d = d + rij[i] * rij[i];
+        }
+        d = sqrt ( d );
 
 /*  Attribute half of the potential energy to particle J */
         if ( d < PI2 )
@@ -196,6 +248,7 @@ void compute ( int np, int nd, double pos[], double vel[], double mass,
 /*  Compute the kinetic energy */
     for ( i = 0; i < nd; i++ )
       ke = ke + vel[i+k*nd] * vel[i+k*nd];
+  }
   }
 
   ke = ke * 0.5 * mass;

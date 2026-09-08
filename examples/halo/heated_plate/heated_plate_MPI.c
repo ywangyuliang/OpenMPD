@@ -241,15 +241,16 @@ int main ( int argc, char *argv[] )
 
 /* iterate until the  new solution W differs from the old solution U by no more than EPSILON */
 
+  MPI_Init(&argc, &argv);
+  MPI_Comm_size(MPI_COMM_WORLD, &n_procs); /* Getting # of processes */
+  MPI_Comm_rank(MPI_COMM_WORLD, &id);     /* Getting my rank */
+
+  MPI_Barrier(MPI_COMM_WORLD);
 #ifdef _OPENMP
   start_time = omp_get_wtime();
 #else
   gettimeofday(&tv_start, NULL);
 #endif
-
-  MPI_Init(&argc, &argv);
-  MPI_Comm_size(MPI_COMM_WORLD, &n_procs); /* Getting # of processes */
-  MPI_Comm_rank(MPI_COMM_WORLD, &id);     /* Getting my rank */
 
   int n_rows = ceil(1.0 * M / n_procs);
   int offset = id * n_rows;
@@ -289,7 +290,7 @@ int main ( int argc, char *argv[] )
     MPI_Isend(w2[1], N * my_rows, MPI_DOUBLE, MASTER, 102, COMM, &reqs);
   }
 
-  MPI_Finalize();
+  MPI_Barrier(MPI_COMM_WORLD);
   if(id == 0)
   {
 
@@ -307,6 +308,7 @@ int main ( int argc, char *argv[] )
     printf ( "\n" );
     printf ( "  Error tolerance achieved.\n" );
     printf("\n Tiempo version Secuencial = %lg s\n", run_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 
   /* Write the solution to the output file */
     output = fopen(output_filename, "wt");
@@ -330,5 +332,6 @@ int main ( int argc, char *argv[] )
     printf ( "HEATED_PLATE_Serie:\n" );
     printf ( "  Normal end of execution.\n" );
   }
+  MPI_Finalize();
   return 0;
 }

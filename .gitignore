@@ -7,11 +7,16 @@ tmp/
 temp/
 
 # Build products
+*.pyc
 *.o
 *.out
 a.out
 out
+out_*
 *_out
+*_omp
+*_ompd
+*_seq
 OpenMpD/fparse
 
 # Flex and Bison generated files
@@ -44,6 +49,10 @@ OpenMpD/heated_plate_*_result*.txt
 examples/**/log.txt
 examples/**/error.txt
 examples/**/sym_tables.txt
+
+# Keep performance measurements and their evidence
+!OpenMpD/tests/performance/results/
+!OpenMpD/tests/performance/results/**/*.log
 
 # Generated example images and data
 OpenMpD/mandelbrot.ppm

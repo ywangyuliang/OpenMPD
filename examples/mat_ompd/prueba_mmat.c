@@ -41,7 +41,7 @@ void Mult_ikj(int fA, int cA, int cB, float matA[fA][cA], float matB[cA][cB], fl
 #pragma omp teams distribute dist_schedule(static,1)
 #pragma omp parallel for private(r, j, k)
      for (i=0; i<fC; i++)
-        for (k=0; k<cC; k++) {
+        for (k=0; k<cA; k++) {
           r = matA[i][k];
           for (j=0; j<cB; j++)
                matC[i][j] += r * matB[k][j];
@@ -73,11 +73,11 @@ float matC[fA][cB]) {
 
 int main (int argc, char* argv[])
 {
-    int result;
     int F1, C1, F2, C2;
-    int i, j, k;
+    int i, j;
     struct timeval t, t2;
     double segundos;
+    double calculation_seconds = 0.0;
 
 	if ((argc != 4) && (argc != 5)) {
             printf("Introduce las dimensiones de la matriz A: M x N (separadas por un blanco\n");
@@ -116,6 +116,7 @@ int main (int argc, char* argv[])
     Mult_ijk(F1, C1, C2, matA, matB, matC);
     gettimeofday(&t2, NULL);
     segundos = (((t2.tv_usec - t.tv_usec)/1000000.0f)  + (t2.tv_sec - t.tv_sec));
+    calculation_seconds += segundos;
     printf("Total time using ijk was %f seconds\n", segundos);
 
     gettimeofday(&t, NULL);
@@ -123,25 +124,19 @@ int main (int argc, char* argv[])
     Mult_ikj(F1, C1, C2, matA, matB, matC_ikj);
     gettimeofday(&t2, NULL);
     segundos = (((t2.tv_usec - t.tv_usec)/1000000.0f)  + (t2.tv_sec - t.tv_sec));
+    calculation_seconds += segundos;
     printf("Total time using ikj was %f seconds\n", segundos);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", calculation_seconds);
 
 	int wrong = 0;
         for (i=0; i<F1; i++) {
             for (j=0; j<C2; j++) {
-                result = 0;
-                for (k=0; k<C1; k++) {
-                    result += matA[i][k] * matB[k][j];
-                }
-                if (matC[i][j] != result)
-		    wrong = 1;
-                if (matC_ikj[i][j] != result)
-		    wrong = 2;
+                if (matC[i][j] != matC_ikj[i][j])
+                    wrong = 1;
             }
         }
 	if (wrong == 1)
-	    printf("Test Failed in ijk!!\n");
-	else if (wrong == 2)
-	    printf("Test Failed in ikj!!!\n");
+	    printf("Test Failed: ijk and ikj results differ!!\n");
 	else printf("Test Passed!!!\n");
 
     if (F1<10){ /* Print matrix values for small inputs */

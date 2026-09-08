@@ -71,6 +71,7 @@ int main(int argc, char **argv)
     printf("expected = %ld\n", expected);
     printf("correct = %s\n", result == expected ? "yes" : "no");
     printf("time: %f seconds\n", elapsed_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", elapsed_time);
 
     return 0;
 }

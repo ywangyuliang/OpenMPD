@@ -88,6 +88,7 @@ int main(int argc, char **argv)
     printf("expected = %.15f\n", 2.0);
     printf("error = %.12e\n", fabs(result - 2.0));
     printf("time: %f seconds\n", elapsed_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", elapsed_time);
 
     return 0;
 }

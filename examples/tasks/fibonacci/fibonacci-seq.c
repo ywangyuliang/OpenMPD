@@ -39,6 +39,7 @@ int main(int argc, const char **argv)
     elapsed_time = (((t2.tv_usec - t1.tv_usec)/1000000.0f)  + (t2.tv_sec - t1.tv_sec));
     fprintf(stdout, "fibonacci(%d) = %ld\n", n, res);
     fprintf(stdout, "time: %f seconds\n", elapsed_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", elapsed_time);
 
     return 0;
 }

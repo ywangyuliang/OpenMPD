@@ -1008,32 +1008,48 @@ int tasking_region_emit_body(tasking_region_t *tasking_region, FILE *file){
                 task_depend_t *depend = &task_async_block->depends.items[j];
 
                 if(depend->obj_kind == TDO_VARIABLE){
-                    if(depend->kind == TD_DEPEND_IN || depend->kind == TD_DEPEND_INOUT){
+                    if(depend->kind == TD_DEPEND_IN){
                         fprintf(file, "    ompd_register_task_input_variable(task_id_%d, \"%s\", sizeof(%s));\n",
                             task_async_block->generated_task_kind,
                             depend->name,
                             depend->value_type);
                     }
-                    if(depend->kind == TD_DEPEND_OUT || depend->kind == TD_DEPEND_INOUT){
+                    if(depend->kind == TD_DEPEND_OUT){
                         fprintf(file, "    ompd_register_task_output_variable(task_id_%d, \"%s\", sizeof(%s));\n",
                             task_async_block->generated_task_kind,
                             depend->name,
                             depend->value_type);
                     }
+                    if(depend->kind == TD_DEPEND_INOUT){
+                        fprintf(file, "    ompd_register_task_inout_variable(task_id_%d, \"%s\", sizeof(%s), &%s);\n",
+                            task_async_block->generated_task_kind,
+                            depend->name,
+                            depend->value_type,
+                            depend->name);
+                    }
                 } else {
-                    if(depend->kind == TD_DEPEND_IN || depend->kind == TD_DEPEND_INOUT){
+                    if(depend->kind == TD_DEPEND_IN){
                         fprintf(file, "    ompd_register_task_input_array_element(task_id_%d, \"%s\", %s, sizeof(%s));\n",
                             task_async_block->generated_task_kind,
                             depend->name,
                             depend->index,
                             depend->value_type);
                     }
-                    if(depend->kind == TD_DEPEND_OUT || depend->kind == TD_DEPEND_INOUT){
+                    if(depend->kind == TD_DEPEND_OUT){
                         fprintf(file, "    ompd_register_task_output_array_element(task_id_%d, \"%s\", %s, sizeof(%s));\n",
                             task_async_block->generated_task_kind,
                             depend->name,
                             depend->index,
                             depend->value_type);
+                    }
+                    if(depend->kind == TD_DEPEND_INOUT){
+                        fprintf(file, "    ompd_register_task_inout_array_element(task_id_%d, \"%s\", %s, sizeof(%s), &%s[%s]);\n",
+                            task_async_block->generated_task_kind,
+                            depend->name,
+                            depend->index,
+                            depend->value_type,
+                            depend->name,
+                            depend->index);
                     }
                 }
             }

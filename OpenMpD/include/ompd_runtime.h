@@ -42,11 +42,17 @@ void ompd_register_task_input_variable(ompd_task_id_t task_id, const char *name,
 /* Registers a scalar output dependency for a task */
 void ompd_register_task_output_variable(ompd_task_id_t task_id, const char *name, size_t value_size);
 
+/* Registers a scalar read/write dependency and its value before the first producer */
+void ompd_register_task_inout_variable(ompd_task_id_t task_id, const char *name, size_t value_size, const void *initial_value);
+
 /* Registers one array-element input dependency for a task */
 void ompd_register_task_input_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size);
 
 /* Registers one array-element output dependency for a task */
 void ompd_register_task_output_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size);
+
+/* Registers one array-element read/write dependency and its initial value */
+void ompd_register_task_inout_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size, const void *initial_value);
 
 /* Submits a prepared task to the runtime scheduler */
 void ompd_submit_task(ompd_task_id_t task_id);

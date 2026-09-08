@@ -60,7 +60,6 @@ color *juliaSet(int width,int height,float _Complex c,float radius,int iter){
 	int x,y,i;
 	float _Complex z0;
 	int k=0;
-	int count=0;
 
 	color *rgb;
 #pragma omp cluster broad(radius, iter) gather(rgb[height*width]:chunk(width))
@@ -78,12 +77,10 @@ color *juliaSet(int width,int height,float _Complex c,float radius,int iter){
 
 			if (i<iter) {
 				rgb[k+y] = fcolor(i,iter);
-				count++;
 			}
 		}
 	}
 }
-	printf("Elementos fuera de Jc %d de %d\n",count, width*height);
 	return rgb;
 }
 
@@ -127,11 +124,13 @@ float tiempo_trans;
 #ifdef _OPENMP
 	end_time = omp_get_wtime();
 	printf ( "Tiempo Julia = %f segundos\n",end_time-start_time);
+	printf("OMPD_CALC_TIME_SECONDS=%.9f\n", end_time-start_time);
 #else
 	gettimeofday(&tv_end, NULL);
 	tiempo_trans=(tv_end.tv_sec - tv_start.tv_sec) * 1000000 +
 	  (tv_end.tv_usec - tv_start.tv_usec); /* microseconds */
 	printf("Tiempo Julia = %f segundos\n", tiempo_trans/1000000);
+	printf("OMPD_CALC_TIME_SECONDS=%.9f\n", tiempo_trans/1000000);
 #endif
 
 	tga_write ( width, height, rgb, "julia_set.tga" );

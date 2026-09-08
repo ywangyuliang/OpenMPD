@@ -88,7 +88,7 @@ float tiempo_trans;
   g = ( int * ) malloc ( m * n * sizeof ( int ) );
   b = ( int * ) malloc ( m * n * sizeof ( int ) );
 
-#pragma omp parallel for simd private(j,x,y) schedule(static,1) reduction(max:c_max) num_threads(20)
+#pragma omp parallel for simd private(j,x,y) schedule(static,1) reduction(max:c_max)
   for ( i = 0; i < m; i++ )
   {
     y = ( ( float ) (     i     ) * y_max
@@ -109,7 +109,7 @@ float tiempo_trans;
   printf("c_max %d\n", c_max);
 
 
-#pragma omp parallel for simd private(j,c) schedule(guided,1) num_threads(20)
+#pragma omp parallel for simd private(j,c) schedule(guided,1)
   for ( i = 0; i < m; i++ )
   {
     for ( j = 0; j < n; j++ )
@@ -134,11 +134,13 @@ float tiempo_trans;
 #ifdef _OPENMP
 		run_time = omp_get_wtime() - start_time;
 		printf("\n Tiempo Mandelbrot = %f seconds\n", run_time);
+		printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 #else
 		gettimeofday(&tv_end, NULL);
 		tiempo_trans=(tv_end.tv_sec - tv_start.tv_sec) * 1000000 +
 		  (tv_end.tv_usec - tv_start.tv_usec); /* microseconds */
 		printf("Tiempo Mandelbrot = %f segundos\n", tiempo_trans/1000000);
+		printf("OMPD_CALC_TIME_SECONDS=%.9f\n", tiempo_trans/1000000);
 #endif
 
   printf ( "\n" );

@@ -35,7 +35,7 @@ step = 1.0/(double) num_steps;
 
 #pragma omp cluster broad(num_steps, step)
 #pragma omp teams distribute reduction(+:sum)
-#pragma omp parallel for simd private(x)
+#pragma omp parallel for private(x)
     for (i=0;i< num_steps; i++) {
         x = (i+0.5)*step;
         sum += 4.0/(1.0+x*x);
@@ -46,6 +46,7 @@ gettimeofday(&t2, NULL);
 segundos = (((t2.tv_usec - t1.tv_usec)/1000000.0f)  + (t2.tv_sec - t1.tv_sec));
 
 printf("Pi %25.23f, calc con %ld pasos en %f segundos\n", pi,num_steps,segundos);
+printf("OMPD_CALC_TIME_SECONDS=%.9f\n", segundos);
 printf("Pi es %25.23f, Error relativo %10.8e\n", PI25DT, (double)100 * (pi - PI25DT)/PI25DT);
 
 return(0);

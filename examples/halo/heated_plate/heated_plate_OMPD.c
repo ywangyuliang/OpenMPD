@@ -5,11 +5,6 @@
 # include <sys/time.h>
 # include <omp.h>
 
-# define M 500
-# define N 500
-double u[M][N];
-double w[M][N];
-
 /* **************************************************************************** */
 int main ( int argc, char *argv[] )
 /*
@@ -119,6 +114,9 @@ int main ( int argc, char *argv[] )
   double run_time;
 #endif
 
+# define M 500
+# define N 500
+
   double diff;
   double aux_diff;
   double epsilon;
@@ -130,6 +128,11 @@ int main ( int argc, char *argv[] )
   FILE *output;
   char output_filename[80];
   int success;
+  double u[M][N];
+  double w[M][N];
+
+  MPI_Request reqs;
+  MPI_Status status;
 
   printf ( "\n" );
   printf ( "HEATED_PLATE <epsilon> <fichero-salida>\n" );
@@ -205,10 +208,17 @@ int main ( int argc, char *argv[] )
   gettimeofday(&tv_start, NULL);
 #endif
 
+/* Distribute n rows to each process */
+
+#pragma omp cluster broad(epsilon, diff) broad(w[M][N]) gather(w[M][N]) halo(u[M][N]:1*N)
+{
+#pragma omp teams
   while ( epsilon <= diff )
   {
-/*  Save the old solution in U */
-    #pragma omp parallel for private(j)
+/* Determine the new estimate of the solution at the interior points The new solution U is the average of north, south, east and west neighbors */
+
+    #pragma omp cluster distribute update halo(u[M][N]:1*N)
+    #pragma omp parallel for private(i,j)
     for ( i = 0; i < M; i++ )
       for ( j = 0; j < N; j++ )
         u[i][j] = w[i][j];
@@ -216,23 +226,29 @@ int main ( int argc, char *argv[] )
 /* Determine the new estimate of the solution at the interior points The new solution W is the average of north, south, east and west neighbors */
 
     diff = 0.0;
-    #pragma omp parallel for private(aux_diff,j,i) reduction(max:diff)
-    for ( i = 1; i < M - 1; i++ )
-    {
-      for ( j = 1; j < N - 1; j++ )
+    #pragma omp cluster distribute allreduction(max:diff)
+    #pragma omp parallel for private(i,aux_diff,j)
+    for (i = 0; i < M; i++) {
+      for (j = 0; j < N; j++)
       {
-        w[i][j] = ( u[i-1][j] + u[i+1][j] + u[i][j-1] + u[i][j+1] ) * 0.25;
-        aux_diff = fabs ( w[i][j] - u[i][j] );
-	diff = diff < aux_diff ? aux_diff : diff;
+        if (i > 0 && i < M - 1 && j > 0 && j < N - 1)
+        {
+          w[i][j] = (u[i-1][j] + u[i+1][j] + u[i][j-1] + u[i][j+1]) * 0.25;
+          aux_diff = fabs(w[i][j] - u[i][j]);
+          diff = diff < aux_diff ? aux_diff : diff;
+        }
       }
     }
     iterations++;
+
+#pragma omp cluster teams master
     if ( iterations == iterations_print )
     {
-      printf ( "  %8d  %lg\n", iterations, diff );
+	    printf ( "  %8d  %lg\n", iterations, diff );
       iterations_print = 2 * iterations_print;
     }
   } /* end while epsilon */
+}
 
 #ifdef _OPENMP
   run_time = omp_get_wtime() - start_time;
@@ -248,6 +264,7 @@ int main ( int argc, char *argv[] )
   printf ( "\n" );
   printf ( "  Error tolerance achieved.\n" );
   printf("\n Tiempo version Secuencial = %lg s\n", run_time);
+  printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 
 /* Write the solution to the output file */
   output = fopen(output_filename, "wt");

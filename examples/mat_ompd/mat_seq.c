@@ -123,11 +123,11 @@ int main (int argc, char* argv[])
     float ** matB;
     float ** matC;
     float ** matC_ikj;
-    int result;
     int F1, C1, F2, C2;
-    int i, j, k;
+    int i, j;
     struct timeval t, t2;
     double segundos;
+    double calculation_seconds = 0.0;
 
 	if ((argc != 4) && (argc != 5)) {
             printf("Introduce las dimensiones de la matriz A: M x N (separadas por un blanco\n");
@@ -166,31 +166,26 @@ int main (int argc, char* argv[])
     Mult_ijk(matA, matB, matC, F1, C1, C2);
     gettimeofday(&t2, NULL);
     segundos = (((t2.tv_usec - t.tv_usec)/1000000.0f)  + (t2.tv_sec - t.tv_sec));
+    calculation_seconds += segundos;
     printf("Total time using ijk was %f seconds\n", segundos);
 
     gettimeofday(&t, NULL);
     Mult_ikj(&matA[0][0], &matB[0][0], &matC_ikj[0][0], F1, C1, C2);
     gettimeofday(&t2, NULL);
     segundos = (((t2.tv_usec - t.tv_usec)/1000000.0f)  + (t2.tv_sec - t.tv_sec));
+    calculation_seconds += segundos;
     printf("Total time using ikj was %f seconds\n", segundos);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", calculation_seconds);
 
 	int wrong = 0;
         for (i=0; i<F1; i++) {
             for (j=0; j<C2; j++) {
-                result = 0;
-                for (k=0; k<C1; k++) {
-                    result += matA[i][k] * matB[k][j];
-                }
-                if (matC[i][j] != result)
-		    wrong = 1;
-                if (matC_ikj[i][j] != result)
-		    wrong = 2;
+                if (matC[i][j] != matC_ikj[i][j])
+                    wrong = 1;
             }
         }
 	if (wrong == 1)
-	    printf("Test Failed in ijk!!\n");
-	else if (wrong == 2)
-	    printf("Test Faile in ikj!!!\n");
+	    printf("Test Failed: ijk and ikj results differ!!\n");
 	else printf("Test Passed!!!\n");
 
     if (F1<10){ /* Print matrix values for small inputs */

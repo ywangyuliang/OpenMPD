@@ -1,14 +1,14 @@
 # OpenMPD
 
 - **Authors:** Yuliang Wang, Caijie Wu
-- **Tutor:** Antonio García Dopico
+- **Supervisor:** Antonio García Dopico
 - **Department:** Departamento de Arquitectura y Tecnología de Sistemas Informáticos (DATSI), Universidad Politécnica de Madrid (UPM)
 
 **English** · [Español](#openmpd-español)
 
-OpenMPD is a source-to-source translator. It takes a C program annotated with OpenMPD pragmas and generates a C program with MPI calls, ready to compile and run across several processes. The directive model is close to OpenMP, but designed for clusters.
+OpenMPD is a source-to-source translator for C. It translates OpenMPD directives into MPI calls, producing a C program that can run across several processes. Its directive model is based on OpenMP and adapted to distributed-memory systems.
 
-The goal is to let the programmer describe distributed-memory parallelism with directives instead of writing the MPI communication layer manually. OpenMPD supports data distribution, collective data movement, reductions, halo exchange for stencil-style computations and runtime-managed asynchronous tasks.
+The programmer describes distributed-memory parallelism with directives instead of writing the MPI communication layer directly. OpenMPD supports data distribution, collective communication, reductions, halo exchange and asynchronous tasks managed by its runtime.
 
 The translator is built as a single executable, `fparse`.
 
@@ -21,14 +21,21 @@ OMPD/
 │   ├── src/       translator and runtime sources
 │   ├── syntax/    lexer and parser sources
 │   ├── scripts/   helper scripts
-│   └── tests/     regression tests
+│   └── tests/     regression and performance tests
 ├── examples/      example programs (sequential, OpenMP, OpenMPD, MPI)
 └── README.md      this file
 ```
 
 ## Build and run
 
-All commands below are run from the `OpenMpD/` directory.
+OpenMPD is intended for Linux systems. It requires GNU Make, GCC/G++, Bison, Flex, an MPI implementation that provides `mpicc` and `mpirun`, and Python 3 for the test scripts. The performance tests also require Linux `perf`.
+
+Clone the repository and enter the translator directory before running the commands in this README:
+
+```sh
+git clone https://github.com/Yul1ang/OMPD.git
+cd OMPD/OpenMpD
+```
 
 ### 1. Build the translator
 
@@ -36,7 +43,7 @@ All commands below are run from the `OpenMpD/` directory.
 make fparse
 ```
 
-This generates the parsers and scanners from their sources and links the `fparse` executable. Build from a clean tree before trusting a result, since a stale `fparse` binary can hide failures:
+This command generates the parsers and scanners and links the `fparse` executable. Use a clean build after changing the parser or scanner sources:
 
 ```sh
 make clean && make fparse
@@ -44,62 +51,64 @@ make clean && make fparse
 
 ### 2. Translate an OpenMPD program
 
-The `examples/` directory holds ready-to-use OpenMPD programs grouped by area (`pi`, `halo`, `image_halo`, `game_of_life`, `tasks`, ...), so picking one as the input is the easiest way to try the translator.
+The `examples/` directory contains OpenMPD programs grouped by area, including `pi`, `halo` and `tasks`.
 
-`fparse` takes the input program followed by three output paths: two log files and the generated C/MPI program.
+`fparse` accepts an input program, a log path, an error-log path and an optional path for the generated C/MPI program.
 
 ```sh
 ./fparse input.c log.txt error.txt name_output.c
 ```
 
-Use the `*_output.c` suffix for generated C files. The repository ignores that pattern, along with the default `log.txt` and `error.txt` files:
+The examples in this README use the `*_output.c` suffix for generated C files. Git ignores that suffix, as well as `log.txt` and `error.txt`:
 
 ```sh
-./fparse ../examples/image_halo/image_halo_OMPD.c log.txt error.txt image_halo_output.c
+./fparse ../examples/halo/image_filters/image_halo_OMPD.c log.txt error.txt image_halo_output.c
 ```
 
-`image_halo_output.c` is the generated program; `log.txt` and `error.txt` are the translation logs. If the output path is omitted, the translator only analyses the input without writing anything.
+`image_halo_output.c` is the generated program; `log.txt` and `error.txt` contain the translation diagnostics. If the final path is omitted, the translator analyses the input but does not generate a C file.
 
 ### 3. Compile and run the generated program
 
-Compile the generated program with `mpicc` and run it across several processes with `mpirun`. Add the libraries and arguments the example expects; both are listed for every example in `tests/regression/cases.tsv`:
+Compile the generated program with `mpicc` and execute it with `mpirun`. Each example in `tests/regression/cases.tsv` records its arguments, libraries and process count:
 
 ```sh
 mpicc -O2 image_halo_output.c -fopenmp -lm -o image_halo_out
-mpirun -np 4 ./image_halo_out gaussian 3 ../examples/image_halo/lenna.pgm result.pgm
+mpirun -np 4 ./image_halo_out gaussian 3 ../examples/halo/image_filters/lenna.pgm result.pgm
 ```
 
-If the program uses tasks (`task_async`, `taskwait`, ...), also compile the tasking runtime next to it:
+Programs that use `task_async` or `taskwait` must be linked with the OpenMPD tasking runtime. For example:
 
 ```sh
-mpicc -O2 task_example_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o task_example_out
+./fparse ../examples/tasks/fibonacci/fibonacci-ompd.c log.txt error.txt fibonacci_ompd_output.c
+mpicc -O2 fibonacci_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o fibonacci_ompd_out
+mpirun -np 4 ./fibonacci_ompd_out 20 10
 ```
 
 ### 4. Complete example commands
 
-The following commands are meant to be run from `OpenMpD/`. Build `fparse` first with `make clean && make fparse`.
+The following commands are complete and can be run from `OpenMpD/`. Build `fparse` first with `make clean && make fparse`. For generated programs that support both forms, the commands show a build without OpenMP followed by a build with `-fopenmp`.
 
 #### PI
 
 ```sh
-gcc -O2 ../examples/pi/pi_seq.c -o pi_seq_out
-./pi_seq_out
+gcc -O2 ../examples/pi/pi_seq.c -o pi_seq_out -lm
+./pi_seq_out 1
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/pi/pi_omp.c -o pi_omp_out
-./pi_omp_out
+gcc -O2 -fopenmp ../examples/pi/pi_omp.c -o pi_omp_out -lm
+./pi_omp_out 1
 
 ./fparse ../examples/pi/pi_test1.c log.txt error.txt pi_test1_output.c
-mpicc -O2 pi_test1_output.c -o pi_test1_out
-mpirun -np 4 ./pi_test1_out
-mpicc -O2 -fopenmp pi_test1_output.c -o pi_test1_out
-mpirun -np 4 ./pi_test1_out
+mpicc -O2 pi_test1_output.c -o pi_test1_out -lm
+mpirun -np 4 ./pi_test1_out 1
+mpicc -O2 -fopenmp pi_test1_output.c -o pi_test1_out -lm
+mpirun -np 4 ./pi_test1_out 1
 
 ./fparse ../examples/pi/pi_ompd.c log.txt error.txt pi_ompd_output.c
-mpicc -O2 pi_ompd_output.c -o pi_ompd_out
-mpirun -np 4 ./pi_ompd_out
-mpicc -O2 -fopenmp pi_ompd_output.c -o pi_ompd_out
-mpirun -np 4 ./pi_ompd_out
+mpicc -O2 pi_ompd_output.c -o pi_ompd_out -lm
+mpirun -np 4 ./pi_ompd_out 1
+mpicc -O2 -fopenmp pi_ompd_output.c -o pi_ompd_out -lm
+mpirun -np 4 ./pi_ompd_out 1
 ```
 
 #### Julia
@@ -128,11 +137,11 @@ mpirun -np 4 ./julia_ompd_out 1000 -0.85 0.0 2.0 200
 #### MMAT
 
 ```sh
-gcc -O2 ../examples/mmat/IJK/mmat_ijk.c -o mmat_seq_out
+gcc -O2 ../examples/mat_ompd/mat_seq.c -o mmat_seq_out
 ./mmat_seq_out 1536 1536 1536 1536
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/mmat/IJK/mmat_ijk_omp.c -o mmat_omp_out
+gcc -O2 -fopenmp ../examples/mat_ompd/mat_omp.c -o mmat_omp_out
 ./mmat_omp_out 1536 1536 1536 1536
 
 ./fparse ../examples/mat_ompd/prueba_mmat.c log.txt error.txt prueba_mmat_output.c
@@ -191,14 +200,14 @@ mpirun -np 4 ./md_ompd_out 3 800 700 0.01
 #### Heated plate
 
 ```sh
-gcc -O2 ../examples/Heated/heated_plate_SEQ.c -o heated_plate_seq_out -lm
+gcc -O2 ../examples/halo/heated_plate/heated_plate_SEQ.c -o heated_plate_seq_out -lm
 ./heated_plate_seq_out 0.001 heated_plate_seq_result.txt
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/Heated/heated_plate_OMP.c -o heated_plate_omp_out -lm
+gcc -O2 -fopenmp ../examples/halo/heated_plate/heated_plate_OMP.c -o heated_plate_omp_out -lm
 ./heated_plate_omp_out 0.001 heated_plate_omp_result.txt
 
-./fparse ../examples/Heated/heated_plate_OMPD.c log.txt error.txt heated_plate_ompd_output.c
+./fparse ../examples/halo/heated_plate/heated_plate_OMPD.c log.txt error.txt heated_plate_ompd_output.c
 mpicc -O2 heated_plate_ompd_output.c -o heated_plate_ompd_out -lm
 mpirun -np 4 ./heated_plate_ompd_out 0.001 heated_plate_ompd_result.txt
 mpicc -fopenmp -O2 heated_plate_ompd_output.c -o heated_plate_ompd_out -lm
@@ -208,35 +217,35 @@ mpirun -np 4 ./heated_plate_ompd_out 0.001 heated_plate_ompd_result.txt
 #### Game of life
 
 ```sh
-gcc -O2 ../examples/game_of_life/game_of_life_SEQ.c -o game_of_life_seq_out
+gcc -O2 ../examples/halo/game_of_life/game_of_life_SEQ.c -o game_of_life_seq_out -lm
 ./game_of_life_seq_out 1000 1000 8000 0
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/game_of_life/game_of_life_OMP.c -o game_of_life_omp_out
+gcc -O2 -fopenmp ../examples/halo/game_of_life/game_of_life_OMP.c -o game_of_life_omp_out -lm
 ./game_of_life_omp_out 1000 1000 8000 0
 
-./fparse ../examples/game_of_life/game_of_life_OMPD.c log.txt error.txt game_of_life_ompd_output.c
-mpicc -O2 game_of_life_ompd_output.c -o game_of_life_ompd_out
+./fparse ../examples/halo/game_of_life/game_of_life_OMPD.c log.txt error.txt game_of_life_ompd_output.c
+mpicc -O2 game_of_life_ompd_output.c -o game_of_life_ompd_out -lm
 mpirun -np 4 ./game_of_life_ompd_out 1000 1000 8000 0
-mpicc -fopenmp -O2 game_of_life_ompd_output.c -o game_of_life_ompd_out
+mpicc -fopenmp -O2 game_of_life_ompd_output.c -o game_of_life_ompd_out -lm
 mpirun -np 4 ./game_of_life_ompd_out 1000 1000 8000 0
 ```
 
 #### Image halo
 
 ```sh
-gcc -O2 ../examples/image_halo/image_halo_SEQ.c -o image_halo_seq_out -lm
-./image_halo_seq_out g 5 ../examples/image_halo/lenna.pgm output_SEQ_g5x5.pgm 1000
+gcc -O2 ../examples/halo/image_filters/image_halo_SEQ.c -o image_halo_seq_out -lm
+./image_halo_seq_out g 5 ../examples/halo/image_filters/lenna.pgm output_SEQ_g5x5.pgm 1000
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/image_halo/image_halo_OMP.c -o image_halo_omp_out -lm
-./image_halo_omp_out g 5 ../examples/image_halo/lenna.pgm output_OMP_g5x5.pgm 1000
+gcc -O2 -fopenmp ../examples/halo/image_filters/image_halo_OMP.c -o image_halo_omp_out -lm
+./image_halo_omp_out g 5 ../examples/halo/image_filters/lenna.pgm output_OMP_g5x5.pgm 1000
 
-./fparse ../examples/image_halo/image_halo_OMPD.c log.txt error.txt image_halo_ompd_output.c
+./fparse ../examples/halo/image_filters/image_halo_OMPD.c log.txt error.txt image_halo_ompd_output.c
 mpicc -O2 image_halo_ompd_output.c -o image_halo_ompd_out -lm
-mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/image_halo/lenna.pgm output_OMPD_g5x5.pgm 1000
+mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/halo/image_filters/lenna.pgm output_OMPD_g5x5.pgm 1000
 mpicc -fopenmp -O2 image_halo_ompd_output.c -o image_halo_ompd_out -lm
-mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/image_halo/lenna.pgm output_OMPD_g5x5.pgm 1000
+mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/halo/image_filters/lenna.pgm output_OMPD_g5x5.pgm 1000
 ```
 
 #### Tasking: Fibonacci
@@ -258,15 +267,15 @@ mpirun --use-hwthread-cpus -np 16 ./fibonacci_ompd_out 50 30
 #### Tasking: PI
 
 ```sh
-gcc -O2 ../examples/tasks/pi_task/pi_task_seq.c -o pi_task_seq_out
+gcc -O2 ../examples/tasks/pi_task/pi_task_seq.c -o pi_task_seq_out -lm
 ./pi_task_seq_out 1000000000
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/tasks/pi_task/pi_task_omp.c -o pi_task_omp_out
+gcc -O2 -fopenmp ../examples/tasks/pi_task/pi_task_omp.c -o pi_task_omp_out -lm
 ./pi_task_omp_out 1000000000
 
 ./fparse ../examples/tasks/pi_task/pi_task_ompd.c log.txt error.txt pi_task_ompd_output.c
-mpicc -O2 pi_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o pi_task_ompd_out
+mpicc -O2 pi_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -lm -o pi_task_ompd_out
 mpirun -np 4 ./pi_task_ompd_out 1000000000
 ```
 
@@ -300,6 +309,17 @@ mpicc -O2 pipeline_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o 
 mpirun -np 5 ./pipeline_ompd_out
 ```
 
+#### Tasking: Inventory (`inout`)
+
+```sh
+gcc -O2 ../examples/tasks/inventory/inventory_seq.c -o inventory_seq_out
+./inventory_seq_out
+
+./fparse ../examples/tasks/inventory/inventory_ompd.c log.txt error.txt inventory_ompd_output.c
+mpicc -O2 inventory_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o inventory_ompd_out
+mpirun -np 4 ./inventory_ompd_out
+```
+
 #### Tasking: Simpson
 
 ```sh
@@ -317,45 +337,43 @@ mpirun -np 4 ./simpson_task_ompd_out 1e-8 20 10
 
 ## Architecture
 
-The translator reads the input program twice. The first pass works on a preprocessed version of the source and only fills semantic information. The second pass goes back to the original file, reconstructs its output text and applies the OpenMPD transformations while it reads. This keeps the generated program close to the input program, without building a global intermediate representation for the whole C file.
+The translator works in two passes. The first reads a preprocessed copy of the source and records declarations and types. The second reads the original source, copies its C code to the output and applies the OpenMPD transformations. There is no single intermediate representation for the complete C file.
 
 ```text
 input.c
-  -> main.cc
-  -> preprocessor pass
-       mpicc -E -P -include mpi.h
+  -> first pass: mpicc -E -P -include mpi.h
        preprolexer.ll + preproparser.yy
        symbol_table.h
-  -> main pass over the original source
+  -> second pass over input.c
        C99-scanner.lex + C99-parser.yacc
        omplexer.ll + ompparser.yy
-       writer.cc + output_slots.h/.cc
-       *_transform modules + mpi_lifecycle
-       tasking model + tasking runtime hooks
+       writer.cc + transform modules
   -> output.c
 ```
 
-`main.cc` is the entry point. It opens the input, log, error and optional output files, reserves the deferred output slots, and launches `mpicc -E -P -include mpi.h`. The temporary preprocessed file is read by `preprolexer.ll` and `preproparser.yy`, which fill `symbol_table.h` with declarations and type information that may not appear explicitly in the original file.
+`main.cc` controls both passes and manages the input, diagnostic and output files. It starts `mpicc -E -P -include mpi.h` for the first pass. `preprolexer.ll` and `preproparser.yy` read its output and store declarations and type information in `symbol_table.h`.
 
-After the preprocessor pass, `main.cc` rewinds the original source and calls `yyparse()`. In this pass, `C99-parser.yacc` drives the C grammar and `C99-scanner.lex` provides the tokens. When the scanner finds a source line that starts with `#`, it reads the whole line separately instead of processing it as ordinary C tokens. If that line is an OpenMPD pragma, it is sent to `parseOpenMP()`, where `omplexer.ll` tokenizes the directive and `ompparser.yy` interprets its clauses.
+For the second pass, `main.cc` returns to the original source and calls `yyparse()`. `C99-parser.yacc` defines the C grammar and `C99-scanner.lex` provides its tokens. The scanner reads preprocessor lines separately and sends OpenMPD pragmas to `parse_openmp_pragma()`. `omplexer.ll` tokenizes each directive and `ompparser.yy` parses its clauses.
 
-The rest of the C source goes through the writer. For each normal token, the scanner passes its text to `writer.cc` with `writer_set_token_text()` and then calls `writer_process_current_token()`. The writer keeps the current source line under construction. When a newline arrives, it closes that line and checks the active translator state to decide whether the line is copied unchanged, buffered for a pending transformation, rewritten or captured for tasking.
+The scanner sends the remaining C tokens to `writer.cc`. The writer constructs one line at a time and, according to the translator state, copies, buffers, rewrites or captures that line.
 
-The pragma parser stores the current clause arguments in `pragma_args.h/.c`. State that must survive beyond a single clause, such as active `cluster`, `distribute`, `master`, `halo` or `num_teams` information, is kept in `translator_state.h/.c` and `cluster_stack.h/.c`. That state is the bridge between the parsed directive and the transform modules that generate MPI code.
+`pragma_args.h/.c` stores the arguments of the current directive. `translator_state.h/.c` and `cluster_stack.h/.c` store longer-lived state for constructs such as `cluster`, `distribute`, `master`, `halo` and `num_teams`. The transform modules use this state to generate MPI code.
 
-The transform modules are responsible for the concrete MPI fragments: `mpi_lifecycle` emits initialization/finalization and process guards, `distribute_transform` rewrites loop bounds and emits worksharing, `scatter_gather_transform`, `reduction_transform`, `memory_transform` and `mpi_type_transform` generate data movement, reductions, allocation/broadcast and datatype declarations. `halo_transform` is connected to distributed loops: the distributed-loop bounds are stored when the loop is rewritten, and a later `update halo` emits the neighbour `MPI_Sendrecv` exchanges when the region is closed.
+`mpi_lifecycle` generates MPI initialization, finalization and process guards. `distribute_transform` rewrites loop bounds and generates work distribution. The scatter/gather, reduction, memory and datatype modules generate their corresponding MPI operations. `halo_transform` stores the bounds of the last distributed loop and uses them to generate the `MPI_Sendrecv` calls for a later `update halo` directive.
 
-Tasking follows the same main pass but does not copy task bodies directly. `tasking_region.h/.c` and `task_async_block.h/.c` record the tasking region and its async blocks, while `task_body_transform.h/.c` builds a small representation of each task body. `tasking_emit.h/.cc` then emits the generated task functions and `ompd_execute_generated_task` through `output_slots.h/.cc`, and leaves at the original `task_async` position the code that builds the task, registers its dependencies and submits it to `ompd_runtime.h/.c`.
+Tasking also uses the second pass, but task bodies are captured instead of copied directly. The tasking modules store each `task_async` body and generate a function for it. At the original position of the directive, they generate the code that creates the task, registers its dependencies and submits it to the runtime.
 
-At the end of the parse, `main.cc` flushes the writer and applies the deferred slots. This final step inserts code that was discovered during the traversal but must appear earlier in the generated file, such as headers, global declarations or generated task definitions.
+The scheduler normally selects the task that became ready most recently (LIFO). At `taskwait`, its worker only selects ready tasks created by the waiting task, directly or through other tasks. If several are ready, it selects the most recent one.
 
-## Supported Directives
+After parsing, `main.cc` flushes the writer and applies the deferred output slots. These slots contain headers, global declarations and task definitions that must appear earlier in the generated file.
 
-The repository contains three main groups of translated constructs:
+## Supported directives
 
-- **Data and work distribution.** `cluster`, `distribute`, `scatter`, `gather`, `allgather`, reductions, broadcasts, memory allocation and MPI datatype declarations are translated directly into MPI fragments by the transform modules.
+The translator supports three groups of constructs:
+
+- **Data and work distribution.** A `cluster` region can allocate and broadcast data with `alloc` and `broad`, move arrays with `scatter`, `gather` and `allgather`, apply `reduction` and `allreduction`, and distribute loop iterations. `declare cluster` generates MPI datatype declarations.
 - **Halo exchange.** A `halo(...)` clause declared on a `cluster` marks the array that needs ghost-border communication. A later `cluster distribute update halo(...)` uses the bounds of the last distributed loop and emits neighbour exchanges for the rows above and below the local block.
-- **Tasking.** `task_async`, `taskwait`, `taskgroup` and `taskyield` are not lowered into one fixed MPI sequence. The translator captures task bodies, generates task functions and input structures, and relies on `ompd_runtime.c` to create, schedule and synchronize tasks between MPI processes.
+- **Tasking.** The translator supports `task_async` and `taskwait`. It captures each asynchronous task body and generates its function and input structure. `ompd_runtime.c` manages dependencies and selects ready tasks in LIFO order. At `taskwait`, it only selects work created by the waiting task, directly or through other tasks. `depend(inout: ...)` preserves the initial value and serializes read-modify-write tasks that use the same dependency.
 
 ## File map
 
@@ -400,7 +418,7 @@ The repository contains three main groups of translated constructs:
 | `task_async_block.h/.c` | One asynchronous task block: dependencies, inputs and body text. |
 | `task_body_transform.h/.c` | Intermediate representation of the task body and its generated code. |
 | `tasking_emit.h/.cc` | Routes a finished region's generated output: the global definitions to their deferred slot and the body to the output. |
-| `ompd_runtime.h/.c` | Tasking runtime compiled *into* the generated program (task creation, dependencies, scheduling, synchronization). |
+| `ompd_runtime.h/.c` | Tasking runtime compiled with the generated program: task creation, dependencies, LIFO selection, `taskwait` and synchronization. |
 | `hash_map.h/.c`, `task_utils.h/.c` | Auxiliary tasking structures and utilities. |
 
 ### Generated files (do not edit by hand)
@@ -409,46 +427,88 @@ The repository contains three main groups of translated constructs:
 
 They are produced by `bison`/`flex` from the `.yy`, `.yacc`, `.ll` and `.lex` files. To change the behaviour of a parser or scanner, edit its source, not the generated file; `make` regenerates them.
 
-## Regression tests
+## Regression test
 
-The regression tests live in `OpenMpD/tests/regression/`. They are integration tests: for each case, the runner compiles and runs a sequential version and the OpenMPD version of the same program, extracts the computed result and compares both. It does not check success messages, but the numeric result.
+The regression test script is in `OpenMpD/tests/regression/`. For each case, it compiles and executes a sequential program and its OpenMPD equivalent, then compares their numeric or file output.
 
-Build `fparse` first and run the tests from the `OpenMpD/` directory. `cases.tsv` lists the examples and `run_regression.py` compiles, runs and compares each row. Generated files and logs are written outside the repository by default, under `WORK_ROOT`.
+Run these commands from `OpenMpD/`. The `regression-test` target builds `fparse` when necessary. `tests/regression/cases.tsv` defines the source files, arguments, libraries, process counts and comparison method for every case.
+
+The script writes temporary files and logs to `/tmp/ompd-regression` by default. Set `WORK_ROOT` to use another directory.
 
 Normal test run:
 
 ```sh
-python3 tests/regression/run_regression.py
+make clean && make regression-test
 ```
 
 Full test run, including the slow cases:
 
 ```sh
-RUN_SLOW=1 python3 tests/regression/run_regression.py
+make fparse && RUN_SLOW=1 python3 tests/regression/run_regression.py
 ```
 
 Run one family:
 
 ```sh
-FILTER_FAMILY=halo python3 tests/regression/run_regression.py
+make fparse && FILTER_FAMILY=halo python3 tests/regression/run_regression.py
 ```
 
 Expected results on a healthy tree:
 
 ```text
-normal: summary: pass=15 skip=9 fail=0
-full:   summary: pass=24 skip=0 fail=0
+normal: summary: pass=18 skip=9 fail=0
+full:   summary: pass=27 skip=0 fail=0
 ```
 
-To add a case, append a row to `cases.tsv`. Its header documents the columns, path placeholders and comparison profiles.
+The script also accepts `CASES_FILE` and `CASE_TIMEOUT` as environment variables. To add a case, add one row to `tests/regression/cases.tsv`. The header documents its columns. `run_regression.py` defines the available path placeholders and comparison profiles.
 
-## Continuing the project
+## Performance tests
 
-The current repository contains a working source-to-source translator for C programs annotated with OpenMPD pragmas. It covers the main translation flow: preprocessing and symbol collection, pragma parsing, source reconstruction, MPI lifecycle generation, distributed loops, collective movement, reductions, memory management, MPI datatype declarations, halo exchange and runtime-based asynchronous tasking.
+The performance tests use the same process and thread counts for every benchmark:
 
-The recommended way to start is to build `fparse`, translate a small example and compare the generated MPI program with the original OpenMPD source. After that, read the architecture section and follow the execution path through `main.cc`, `C99-scanner.lex`, `C99-parser.yacc`, `omplexer.ll`, `ompparser.yy` and `writer.h/.cc`. For a concrete directive, continue in the matching transform module: for example `distribute_transform`, `halo_transform`, `scatter_gather_transform`, `reduction_transform`, `memory_transform`, `mpi_type_transform` or `task_body_transform`.
+- `run_performance.py` defines 2, 4, 8, 12 and 24 as the single process/thread scale.
+- `tests/performance/cases.tsv` lists the available variants for each benchmark. Individual cases cannot define a different scale.
+- Fixed-topology examples such as `pipeline` (5 teams) and `inventory_inout` (4 teams) remain in the regression tests and are not part of the performance tests.
 
-For behaviour-oriented work, `tests/regression/cases.tsv` is the practical map of the project: it shows which examples are currently exercised, which arguments they need, which cases require the tasking runtime and which result profile is used for comparison.
+Each benchmark therefore has eleven core measurements: one sequential run, five OpenMP runs with 2, 4, 8, 12 and 24 threads, and five OpenMPD runs with the same number of MPI processes. Use `--include-ompd-openmp` to include the available OpenMPD+OpenMP configurations.
+
+Preview the complete plan without compiling or running anything:
+
+```sh
+python3 tests/performance/run_performance.py --plan
+```
+
+List all command-line options:
+
+```sh
+python3 tests/performance/run_performance.py --help
+```
+
+Run every case in `tests/performance/cases.tsv`. By default, the script measures the sequential, OpenMP and OpenMPD variants and creates a timestamped CSV in `tests/performance/results/` plus a directory of logs with the same name and the `.logs` suffix:
+
+```sh
+python3 tests/performance/run_performance.py
+```
+
+The script builds `fparse`; no output path is required.
+
+Run only the `base` cases:
+
+```sh
+python3 tests/performance/run_performance.py --family base
+```
+
+The `ompd` variant is the MPI program generated by OpenMPD. A separate `mpi` variant is a handwritten MPI implementation and is excluded by default. Add it with `--include-mpi`. Use `--include-ompd-openmp` for the available hybrid configurations. For a benchmark without a handwritten MPI implementation, set `mpi_source` to `-` and omit `mpi` and `mpi_omp` from `variants`.
+
+Before measuring a configuration, the script runs it once without `perf` as a preliminary check. This detects an immediate execution failure and is not included in the measured average. Its standard output and error are saved in files whose names contain `warmup`.
+
+The script then executes the same configuration five times with `perf stat`. Each CSV row contains two means. `mean_seconds` includes the launcher and MPI lifecycle. `calculation_mean_seconds` uses the `OMPD_CALC_TIME_SECONDS=<seconds>` value printed by the example around its calculation. The script requires one such value from each measured execution.
+
+## Development notes
+
+To study the translator, build `fparse`, translate a small example and compare the generated MPI program with its OpenMPD source. The main path passes through `main.cc`, `C99-scanner.lex`, `C99-parser.yacc`, `omplexer.ll`, `ompparser.yy` and `writer.cc`. Each directive is then handled by its corresponding transform module.
+
+`tests/regression/cases.tsv` provides a practical list of supported examples, required arguments, runtime dependencies and comparison methods.
 
 Future work:
 
@@ -457,7 +517,7 @@ Future work:
 - Define which OpenMPD constructs can be combined with tasking. The current parser keeps tasking clusters on a separate path and rejects some non-task pragmas at the same cluster level.
 - Expand halo support beyond row-wise partitions, including two-dimensional distributions, columns and block-based decompositions.
 - Improve translator memory management. Valgrind still reports memory left allocated at process exit, mainly around `symbol_info` objects in the symbol table; the code needs a clearer rule for which part creates those objects and which part releases them.
-- Study a larger refactor towards an intermediate representation instead of transforming the source line by line during parsing. This is a costly architectural change, but it is closer to how modern compilers separate analysis from code generation and could make task-body translation, semantic checks and MPI generation more robust.
+- Consider an intermediate representation instead of transforming the source line by line during parsing. This would separate analysis from code generation and could simplify task-body translation, semantic checks and MPI generation.
 
 ---
 
@@ -469,9 +529,9 @@ Future work:
 
 [English](#openmpd) · **Español**
 
-OpenMPD es un traductor *source-to-source*. Toma un programa en C anotado con pragmas propios de OpenMPD y genera un programa en C con llamadas MPI listo para compilar y ejecutar en varios procesos. El modelo de directivas se parece a OpenMP, pero está pensado para clústeres.
+OpenMPD es un traductor *source-to-source* para C. Traduce directivas OpenMPD a llamadas MPI y genera un programa en C que puede ejecutarse en varios procesos. Su modelo de directivas se basa en OpenMP y está adaptado a sistemas de memoria distribuida.
 
-El objetivo es permitir que el programador describa paralelismo de memoria distribuida mediante directivas, sin escribir manualmente toda la capa de comunicación MPI. OpenMPD soporta distribución de datos, movimiento colectivo de datos, reducciones, intercambio de halos para cálculos tipo stencil y tareas asíncronas gestionadas por runtime.
+El programador describe el paralelismo de memoria distribuida mediante directivas, sin escribir directamente la capa de comunicación MPI. OpenMPD soporta distribución de datos, comunicación colectiva, reducciones, intercambio de halos y tareas asíncronas gestionadas por su runtime.
 
 El traductor se construye como un único ejecutable, `fparse`.
 
@@ -484,14 +544,21 @@ OMPD/
 │   ├── src/       fuentes del traductor y del runtime
 │   ├── syntax/    fuentes de lexer y parser
 │   ├── scripts/   scripts auxiliares
-│   └── tests/     pruebas de regresión
+│   └── tests/     pruebas de regresión y rendimiento
 ├── examples/      programas de ejemplo (secuencial, OpenMP, OpenMPD, MPI)
 └── README.md      este fichero
 ```
 
 ## Construir y ejecutar
 
-Todos los comandos de abajo se ejecutan desde el directorio `OpenMpD/`.
+OpenMPD está pensado para sistemas Linux. Requiere GNU Make, GCC/G++, Bison, Flex, una implementación de MPI que proporcione `mpicc` y `mpirun`, y Python 3 para los scripts de pruebas. Las pruebas de rendimiento también requieren `perf` para Linux.
+
+Clona el repositorio y entra en el directorio del traductor antes de ejecutar los comandos de este README:
+
+```sh
+git clone https://github.com/Yul1ang/OMPD.git
+cd OMPD/OpenMpD
+```
 
 ### 1. Construir el traductor
 
@@ -499,7 +566,7 @@ Todos los comandos de abajo se ejecutan desde el directorio `OpenMpD/`.
 make fparse
 ```
 
-Esto genera los parsers y scanners a partir de sus fuentes y enlaza el ejecutable `fparse`. Conviene construir desde un árbol limpio antes de fiarse de un resultado, porque un binario `fparse` antiguo puede ocultar fallos:
+Este comando genera los parsers y scanners y enlaza el ejecutable `fparse`. Usa una compilación limpia después de cambiar las fuentes de los parsers o scanners:
 
 ```sh
 make clean && make fparse
@@ -507,62 +574,64 @@ make clean && make fparse
 
 ### 2. Traducir un programa OpenMPD
 
-El directorio `examples/` contiene programas OpenMPD listos para usar, agrupados por área (`pi`, `halo`, `image_halo`, `game_of_life`, `tasks`, ...), así que tomar uno como entrada es la forma más sencilla de probar el traductor.
+El directorio `examples/` contiene programas OpenMPD agrupados por áreas, entre ellas `pi`, `halo` y `tasks`.
 
-`fparse` recibe el programa de entrada seguido de tres rutas de salida: dos ficheros de log y el programa C/MPI generado.
+`fparse` recibe un programa de entrada, una ruta para el log, una ruta para el log de errores y una ruta opcional para el programa C/MPI generado.
 
 ```sh
 ./fparse entrada.c log.txt error.txt nombre_output.c
 ```
 
-Usa el sufijo `*_output.c` para los C generados. El repositorio ignora ese patrón, además de los ficheros por defecto `log.txt` y `error.txt`:
+Los ejemplos de este README usan el sufijo `*_output.c` para los ficheros C generados. Git ignora ese sufijo, además de `log.txt` y `error.txt`:
 
 ```sh
-./fparse ../examples/image_halo/image_halo_OMPD.c log.txt error.txt image_halo_output.c
+./fparse ../examples/halo/image_filters/image_halo_OMPD.c log.txt error.txt image_halo_output.c
 ```
 
-`image_halo_output.c` es el programa generado; `log.txt` y `error.txt` son los registros de la traducción. Si se omite la ruta de salida, el traductor solo analiza la entrada sin escribir nada.
+`image_halo_output.c` es el programa generado; `log.txt` y `error.txt` contienen los diagnósticos de la traducción. Si se omite la última ruta, el traductor analiza la entrada, pero no genera un fichero C.
 
 ### 3. Compilar y ejecutar el programa generado
 
-Se compila el programa generado con `mpicc` y se ejecuta en varios procesos con `mpirun`. Añade las librerías y los argumentos que pide el ejemplo; ambos están listados para cada ejemplo en `tests/regression/cases.tsv`:
+El programa generado se compila con `mpicc` y se ejecuta con `mpirun`. Cada ejemplo de `tests/regression/cases.tsv` indica sus argumentos, librerías y número de procesos:
 
 ```sh
 mpicc -O2 image_halo_output.c -fopenmp -lm -o image_halo_out
-mpirun -np 4 ./image_halo_out gaussian 3 ../examples/image_halo/lenna.pgm result.pgm
+mpirun -np 4 ./image_halo_out gaussian 3 ../examples/halo/image_filters/lenna.pgm result.pgm
 ```
 
-Si el programa usa tareas (`task_async`, `taskwait`, ...), hay que compilar también el runtime de tasking junto a él:
+Los programas que usan `task_async` o `taskwait` deben enlazarse con el runtime de tasking de OpenMPD. Por ejemplo:
 
 ```sh
-mpicc -O2 task_example_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o task_example_out
+./fparse ../examples/tasks/fibonacci/fibonacci-ompd.c log.txt error.txt fibonacci_ompd_output.c
+mpicc -O2 fibonacci_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o fibonacci_ompd_out
+mpirun -np 4 ./fibonacci_ompd_out 20 10
 ```
 
 ### 4. Comandos completos de ejemplos
 
-Los comandos siguientes se ejecutan desde `OpenMpD/`. Construye antes `fparse` con `make clean && make fparse`.
+Los comandos siguientes están completos y se ejecutan desde `OpenMpD/`. Construye antes `fparse` con `make clean && make fparse`. Cuando un programa generado admite ambas formas, los comandos muestran primero la compilación sin OpenMP y después la compilación con `-fopenmp`.
 
 #### PI
 
 ```sh
-gcc -O2 ../examples/pi/pi_seq.c -o pi_seq_out
-./pi_seq_out
+gcc -O2 ../examples/pi/pi_seq.c -o pi_seq_out -lm
+./pi_seq_out 1
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/pi/pi_omp.c -o pi_omp_out
-./pi_omp_out
+gcc -O2 -fopenmp ../examples/pi/pi_omp.c -o pi_omp_out -lm
+./pi_omp_out 1
 
 ./fparse ../examples/pi/pi_test1.c log.txt error.txt pi_test1_output.c
-mpicc -O2 pi_test1_output.c -o pi_test1_out
-mpirun -np 4 ./pi_test1_out
-mpicc -O2 -fopenmp pi_test1_output.c -o pi_test1_out
-mpirun -np 4 ./pi_test1_out
+mpicc -O2 pi_test1_output.c -o pi_test1_out -lm
+mpirun -np 4 ./pi_test1_out 1
+mpicc -O2 -fopenmp pi_test1_output.c -o pi_test1_out -lm
+mpirun -np 4 ./pi_test1_out 1
 
 ./fparse ../examples/pi/pi_ompd.c log.txt error.txt pi_ompd_output.c
-mpicc -O2 pi_ompd_output.c -o pi_ompd_out
-mpirun -np 4 ./pi_ompd_out
-mpicc -O2 -fopenmp pi_ompd_output.c -o pi_ompd_out
-mpirun -np 4 ./pi_ompd_out
+mpicc -O2 pi_ompd_output.c -o pi_ompd_out -lm
+mpirun -np 4 ./pi_ompd_out 1
+mpicc -O2 -fopenmp pi_ompd_output.c -o pi_ompd_out -lm
+mpirun -np 4 ./pi_ompd_out 1
 ```
 
 #### Julia
@@ -591,11 +660,11 @@ mpirun -np 4 ./julia_ompd_out 1000 -0.85 0.0 2.0 200
 #### MMAT
 
 ```sh
-gcc -O2 ../examples/mmat/IJK/mmat_ijk.c -o mmat_seq_out
+gcc -O2 ../examples/mat_ompd/mat_seq.c -o mmat_seq_out
 ./mmat_seq_out 1536 1536 1536 1536
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/mmat/IJK/mmat_ijk_omp.c -o mmat_omp_out
+gcc -O2 -fopenmp ../examples/mat_ompd/mat_omp.c -o mmat_omp_out
 ./mmat_omp_out 1536 1536 1536 1536
 
 ./fparse ../examples/mat_ompd/prueba_mmat.c log.txt error.txt prueba_mmat_output.c
@@ -654,14 +723,14 @@ mpirun -np 4 ./md_ompd_out 3 800 700 0.01
 #### Heated plate
 
 ```sh
-gcc -O2 ../examples/Heated/heated_plate_SEQ.c -o heated_plate_seq_out -lm
+gcc -O2 ../examples/halo/heated_plate/heated_plate_SEQ.c -o heated_plate_seq_out -lm
 ./heated_plate_seq_out 0.001 heated_plate_seq_result.txt
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/Heated/heated_plate_OMP.c -o heated_plate_omp_out -lm
+gcc -O2 -fopenmp ../examples/halo/heated_plate/heated_plate_OMP.c -o heated_plate_omp_out -lm
 ./heated_plate_omp_out 0.001 heated_plate_omp_result.txt
 
-./fparse ../examples/Heated/heated_plate_OMPD.c log.txt error.txt heated_plate_ompd_output.c
+./fparse ../examples/halo/heated_plate/heated_plate_OMPD.c log.txt error.txt heated_plate_ompd_output.c
 mpicc -O2 heated_plate_ompd_output.c -o heated_plate_ompd_out -lm
 mpirun -np 4 ./heated_plate_ompd_out 0.001 heated_plate_ompd_result.txt
 mpicc -fopenmp -O2 heated_plate_ompd_output.c -o heated_plate_ompd_out -lm
@@ -671,35 +740,35 @@ mpirun -np 4 ./heated_plate_ompd_out 0.001 heated_plate_ompd_result.txt
 #### Game of life
 
 ```sh
-gcc -O2 ../examples/game_of_life/game_of_life_SEQ.c -o game_of_life_seq_out
+gcc -O2 ../examples/halo/game_of_life/game_of_life_SEQ.c -o game_of_life_seq_out -lm
 ./game_of_life_seq_out 1000 1000 8000 0
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/game_of_life/game_of_life_OMP.c -o game_of_life_omp_out
+gcc -O2 -fopenmp ../examples/halo/game_of_life/game_of_life_OMP.c -o game_of_life_omp_out -lm
 ./game_of_life_omp_out 1000 1000 8000 0
 
-./fparse ../examples/game_of_life/game_of_life_OMPD.c log.txt error.txt game_of_life_ompd_output.c
-mpicc -O2 game_of_life_ompd_output.c -o game_of_life_ompd_out
+./fparse ../examples/halo/game_of_life/game_of_life_OMPD.c log.txt error.txt game_of_life_ompd_output.c
+mpicc -O2 game_of_life_ompd_output.c -o game_of_life_ompd_out -lm
 mpirun -np 4 ./game_of_life_ompd_out 1000 1000 8000 0
-mpicc -fopenmp -O2 game_of_life_ompd_output.c -o game_of_life_ompd_out
+mpicc -fopenmp -O2 game_of_life_ompd_output.c -o game_of_life_ompd_out -lm
 mpirun -np 4 ./game_of_life_ompd_out 1000 1000 8000 0
 ```
 
 #### Image halo
 
 ```sh
-gcc -O2 ../examples/image_halo/image_halo_SEQ.c -o image_halo_seq_out -lm
-./image_halo_seq_out g 5 ../examples/image_halo/lenna.pgm output_SEQ_g5x5.pgm 1000
+gcc -O2 ../examples/halo/image_filters/image_halo_SEQ.c -o image_halo_seq_out -lm
+./image_halo_seq_out g 5 ../examples/halo/image_filters/lenna.pgm output_SEQ_g5x5.pgm 1000
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/image_halo/image_halo_OMP.c -o image_halo_omp_out -lm
-./image_halo_omp_out g 5 ../examples/image_halo/lenna.pgm output_OMP_g5x5.pgm 1000
+gcc -O2 -fopenmp ../examples/halo/image_filters/image_halo_OMP.c -o image_halo_omp_out -lm
+./image_halo_omp_out g 5 ../examples/halo/image_filters/lenna.pgm output_OMP_g5x5.pgm 1000
 
-./fparse ../examples/image_halo/image_halo_OMPD.c log.txt error.txt image_halo_ompd_output.c
+./fparse ../examples/halo/image_filters/image_halo_OMPD.c log.txt error.txt image_halo_ompd_output.c
 mpicc -O2 image_halo_ompd_output.c -o image_halo_ompd_out -lm
-mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/image_halo/lenna.pgm output_OMPD_g5x5.pgm 1000
+mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/halo/image_filters/lenna.pgm output_OMPD_g5x5.pgm 1000
 mpicc -fopenmp -O2 image_halo_ompd_output.c -o image_halo_ompd_out -lm
-mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/image_halo/lenna.pgm output_OMPD_g5x5.pgm 1000
+mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/halo/image_filters/lenna.pgm output_OMPD_g5x5.pgm 1000
 ```
 
 #### Tasking: Fibonacci
@@ -721,15 +790,15 @@ mpirun --use-hwthread-cpus -np 16 ./fibonacci_ompd_out 50 30
 #### Tasking: PI
 
 ```sh
-gcc -O2 ../examples/tasks/pi_task/pi_task_seq.c -o pi_task_seq_out
+gcc -O2 ../examples/tasks/pi_task/pi_task_seq.c -o pi_task_seq_out -lm
 ./pi_task_seq_out 1000000000
 
 export OMP_NUM_THREADS=4
-gcc -O2 -fopenmp ../examples/tasks/pi_task/pi_task_omp.c -o pi_task_omp_out
+gcc -O2 -fopenmp ../examples/tasks/pi_task/pi_task_omp.c -o pi_task_omp_out -lm
 ./pi_task_omp_out 1000000000
 
 ./fparse ../examples/tasks/pi_task/pi_task_ompd.c log.txt error.txt pi_task_ompd_output.c
-mpicc -O2 pi_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o pi_task_ompd_out
+mpicc -O2 pi_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -lm -o pi_task_ompd_out
 mpirun -np 4 ./pi_task_ompd_out 1000000000
 ```
 
@@ -763,6 +832,17 @@ mpicc -O2 pipeline_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o 
 mpirun -np 5 ./pipeline_ompd_out
 ```
 
+#### Tasking: Inventario (`inout`)
+
+```sh
+gcc -O2 ../examples/tasks/inventory/inventory_seq.c -o inventory_seq_out
+./inventory_seq_out
+
+./fparse ../examples/tasks/inventory/inventory_ompd.c log.txt error.txt inventory_ompd_output.c
+mpicc -O2 inventory_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o inventory_ompd_out
+mpirun -np 4 ./inventory_ompd_out
+```
+
 #### Tasking: Simpson
 
 ```sh
@@ -780,45 +860,43 @@ mpirun -np 4 ./simpson_task_ompd_out 1e-8 20 10
 
 ## Arquitectura
 
-El traductor lee el programa de entrada dos veces. La primera pasada trabaja sobre una versión preprocesada del fuente y solo recopila información semántica. La segunda vuelve al fichero original, reconstruye el texto de salida y aplica las transformaciones de OpenMPD mientras lo recorre. Así el programa generado se mantiene cercano al original, sin construir una representación intermedia global de todo el fichero C.
+El traductor trabaja en dos pasadas. La primera lee una copia preprocesada del fuente y guarda declaraciones y tipos. La segunda lee el fuente original, copia su código C a la salida y aplica las transformaciones de OpenMPD. No hay una única representación intermedia para todo el fichero C.
 
 ```text
 entrada.c
-  -> main.cc
-  -> pasada de preprocesado
-       mpicc -E -P -include mpi.h
+  -> primera pasada: mpicc -E -P -include mpi.h
        preprolexer.ll + preproparser.yy
        symbol_table.h
-  -> pasada principal sobre el fuente original
+  -> segunda pasada sobre entrada.c
        C99-scanner.lex + C99-parser.yacc
        omplexer.ll + ompparser.yy
-       writer.cc + output_slots.h/.cc
-       módulos *_transform + mpi_lifecycle
-       modelo de tasking + llamadas al runtime
+       writer.cc + módulos transform
   -> salida.c
 ```
 
-`main.cc` es el punto de entrada. Abre los ficheros de entrada, log, errores y salida opcional, reserva los slots diferidos y lanza `mpicc -E -P -include mpi.h`. El fichero temporal preprocesado lo leen `preprolexer.ll` y `preproparser.yy`, que rellenan `symbol_table.h` con declaraciones e información de tipos que pueden no aparecer explícitamente en el fichero original.
+`main.cc` controla las dos pasadas y gestiona los ficheros de entrada, diagnóstico y salida. Para la primera pasada ejecuta `mpicc -E -P -include mpi.h`. `preprolexer.ll` y `preproparser.yy` leen su salida y guardan las declaraciones y la información de tipos en `symbol_table.h`.
 
-Después de la pasada de preprocesado, `main.cc` vuelve al fuente original y llama a `yyparse()`. En esta pasada, `C99-parser.yacc` dirige la gramática de C y `C99-scanner.lex` proporciona los tokens. Cuando el scanner encuentra una línea del fuente que empieza por `#`, lee la línea completa por separado en lugar de procesarla como tokens normales de C. Si esa línea es un pragma OpenMPD, se envía a `parseOpenMP()`, donde `omplexer.ll` tokeniza la directiva y `ompparser.yy` interpreta sus cláusulas.
+En la segunda pasada, `main.cc` vuelve al fuente original y llama a `yyparse()`. `C99-parser.yacc` define la gramática de C y `C99-scanner.lex` proporciona sus tokens. El scanner lee por separado las líneas del preprocesador y envía los pragmas OpenMPD a `parse_openmp_pragma()`. `omplexer.ll` tokeniza cada directiva y `ompparser.yy` analiza sus cláusulas.
 
-El resto del código C pasa por el writer. Para cada token normal, el scanner pasa su texto a `writer.cc` con `writer_set_token_text()` y después llama a `writer_process_current_token()`. El writer mantiene en construcción la línea actual. Cuando llega un salto de línea, cierra esa línea y consulta el estado activo del traductor para decidir si se copia sin cambios, se bufferiza para una transformación pendiente, se reescribe o se captura para tasking.
+El scanner envía los tokens C restantes a `writer.cc`. El writer construye una línea cada vez y, según el estado del traductor, la copia, la almacena, la reescribe o la captura.
 
-El parser de pragmas guarda los argumentos de la cláusula activa en `pragma_args.h/.c`. El estado que debe durar más que una cláusula, como la información de `cluster`, `distribute`, `master`, `halo` o `num_teams`, se mantiene en `translator_state.h/.c` y `cluster_stack.h/.c`. Ese estado conecta la directiva parseada con los módulos transform que generan código MPI.
+`pragma_args.h/.c` guarda los argumentos de la directiva actual. `translator_state.h/.c` y `cluster_stack.h/.c` guardan el estado de construcciones como `cluster`, `distribute`, `master`, `halo` y `num_teams`. Los módulos transform usan este estado para generar código MPI.
 
-Los módulos transform generan los fragmentos MPI concretos: `mpi_lifecycle` emite inicialización/finalización y guardas por proceso, `distribute_transform` reescribe límites de bucles y genera el reparto de trabajo, `scatter_gather_transform`, `reduction_transform`, `memory_transform` y `mpi_type_transform` generan movimiento de datos, reducciones, reserva/broadcast y declaraciones de tipos. `halo_transform` se conecta con los bucles distribuidos: guarda los límites del bucle cuando se reescribe y, si aparece un `update halo`, emite los `MPI_Sendrecv` con los vecinos al cerrar la región.
+`mpi_lifecycle` genera la inicialización y finalización de MPI y las condiciones por proceso. `distribute_transform` reescribe los límites de los bucles y genera el reparto de trabajo. Los módulos de scatter/gather, reducción, memoria y tipos generan las operaciones MPI correspondientes. `halo_transform` guarda los límites del último bucle distribuido y los usa para generar las llamadas a `MPI_Sendrecv` de una directiva `update halo` posterior.
 
-Tasking sigue la misma pasada principal, pero no copia directamente los cuerpos de tarea. `tasking_region.h/.c` y `task_async_block.h/.c` registran la región y sus bloques asíncronos, mientras que `task_body_transform.h/.c` construye una representación pequeña de cada cuerpo. Después, `tasking_emit.h/.cc` emite las funciones de tarea generadas y `ompd_execute_generated_task` mediante `output_slots.h/.cc`, y deja en el punto original de `task_async` el código que crea la tarea, registra sus dependencias y la envía a `ompd_runtime.h/.c`.
+Tasking también usa la segunda pasada, pero los cuerpos de tarea se capturan en vez de copiarse directamente. Los módulos de tasking guardan el cuerpo de cada `task_async` y generan una función para él. En la posición original de la directiva generan el código que crea la tarea, registra sus dependencias y la envía al runtime.
 
-Al terminar el parse, `main.cc` vacía el writer y aplica los slots diferidos. Ese último paso inserta el código que se descubrió durante el recorrido pero debe aparecer antes en el fichero generado, como cabeceras, declaraciones globales o definiciones generadas de tareas.
+El planificador selecciona normalmente la tarea que ha pasado a estar lista más recientemente (LIFO). En `taskwait`, su worker solo selecciona tareas listas creadas por la tarea que espera, directamente o a través de otras tareas. Si hay varias, selecciona la más reciente.
+
+Al terminar el análisis, `main.cc` vacía el writer y aplica los slots diferidos. Estos slots contienen cabeceras, declaraciones globales y definiciones de tareas que deben aparecer antes en el fichero generado.
 
 ## Directivas soportadas
 
 El repositorio contiene tres grupos principales de construcciones traducidas:
 
-- **Distribución de datos y trabajo.** `cluster`, `distribute`, `scatter`, `gather`, `allgather`, reducciones, broadcasts, reserva de memoria y declaraciones de tipos MPI se traducen directamente a fragmentos MPI desde los módulos transform.
+- **Distribución de datos y trabajo.** Una región `cluster` puede reservar y difundir datos con `alloc` y `broad`, mover arrays con `scatter`, `gather` y `allgather`, aplicar `reduction` y `allreduction`, y distribuir las iteraciones de un bucle. `declare cluster` genera declaraciones de tipos MPI.
 - **Intercambio de halo.** Una cláusula `halo(...)` declarada en un `cluster` marca el array que necesita comunicación de bordes fantasma. Después, `cluster distribute update halo(...)` usa los límites del último bucle distribuido y emite intercambios con los vecinos para las filas superior e inferior del bloque local.
-- **Tasking.** `task_async`, `taskwait`, `taskgroup` y `taskyield` no se reducen a una secuencia MPI fija. El traductor captura cuerpos de tarea, genera funciones e inputs auxiliares, y delega en `ompd_runtime.c` la creación, planificación y sincronización de tareas entre procesos MPI.
+- **Tasking.** El traductor soporta `task_async` y `taskwait`. Captura el cuerpo de cada tarea asíncrona y genera su función y su estructura de entrada. `ompd_runtime.c` gestiona las dependencias y selecciona las tareas listas en orden LIFO. En `taskwait`, solo selecciona trabajo creado por la tarea que espera, directamente o a través de otras tareas. `depend(inout: ...)` conserva el valor inicial y serializa las tareas de lectura-modificación-escritura sobre una misma dependencia.
 
 ## Mapa de ficheros
 
@@ -863,7 +941,7 @@ El repositorio contiene tres grupos principales de construcciones traducidas:
 | `task_async_block.h/.c` | Un bloque de tarea asíncrona: dependencias, entradas y texto del cuerpo. |
 | `task_body_transform.h/.c` | Representación intermedia del cuerpo de la tarea y su código generado. |
 | `tasking_emit.h/.cc` | Enruta la salida generada de una región terminada: las definiciones globales a su slot diferido y el cuerpo a la salida. |
-| `ompd_runtime.h/.c` | Runtime de tasking que se compila *dentro* del programa generado (creación de tareas, dependencias, planificación, sincronización). |
+| `ompd_runtime.h/.c` | Runtime de tasking que se compila con el programa generado: creación de tareas, dependencias, selección LIFO, `taskwait` y sincronización. |
 | `hash_map.h/.c`, `task_utils.h/.c` | Estructuras y utilidades auxiliares de tasking. |
 
 ### Ficheros generados (no editar a mano)
@@ -872,46 +950,86 @@ El repositorio contiene tres grupos principales de construcciones traducidas:
 
 Los produce `bison`/`flex` a partir de los `.yy`, `.yacc`, `.ll` y `.lex`. Para cambiar el comportamiento de un parser o scanner se edita su fuente, no el fichero generado; `make` los vuelve a generar.
 
-## Tests de regresión
+## Prueba de regresión
 
-Las pruebas de regresión están en `OpenMpD/tests/regression/`. Son pruebas de integración: para cada caso, el runner compila y ejecuta una versión secuencial y la versión OpenMPD del mismo programa, extrae el resultado calculado y compara ambos. No comprueba mensajes de éxito, sino el resultado numérico.
+El script de prueba de regresión está en `OpenMpD/tests/regression/`. Para cada caso compila y ejecuta un programa secuencial y su equivalente OpenMPD, y después compara su salida numérica o sus ficheros.
 
-Hay que construir `fparse` antes y ejecutar las pruebas desde el directorio `OpenMpD/`. `cases.tsv` lista los ejemplos y `run_regression.py` compila, ejecuta y compara cada fila. Los ficheros generados y logs se escriben fuera del repositorio por defecto, bajo `WORK_ROOT`.
+Ejecuta estos comandos desde `OpenMpD/`. El target `regression-test` construye `fparse` cuando es necesario. `tests/regression/cases.tsv` define las fuentes, los argumentos, las librerías, el número de procesos y el método de comparación de cada caso. El script escribe los ficheros temporales y logs en `/tmp/ompd-regression` por defecto; define `WORK_ROOT` para usar otro directorio.
 
 Ejecución normal:
 
 ```sh
-python3 tests/regression/run_regression.py
+make clean && make regression-test
 ```
 
 Ejecución completa, incluyendo los casos lentos:
 
 ```sh
-RUN_SLOW=1 python3 tests/regression/run_regression.py
+make fparse && RUN_SLOW=1 python3 tests/regression/run_regression.py
 ```
 
 Ejecutar una familia concreta:
 
 ```sh
-FILTER_FAMILY=halo python3 tests/regression/run_regression.py
+make fparse && FILTER_FAMILY=halo python3 tests/regression/run_regression.py
 ```
 
 Resultados esperados con el árbol sano:
 
 ```text
-normal:   summary: pass=15 skip=9 fail=0
-completa: summary: pass=24 skip=0 fail=0
+normal:   summary: pass=18 skip=9 fail=0
+completa: summary: pass=27 skip=0 fail=0
 ```
 
-Para añadir un caso se agrega una fila a `cases.tsv`. Su cabecera documenta las columnas, los placeholders de rutas y los perfiles de comparación.
+El script también acepta `CASES_FILE`, `WORK_ROOT` y `CASE_TIMEOUT` como variables de entorno. Para añadir un caso se agrega una fila a `tests/regression/cases.tsv`. La cabecera documenta sus columnas. Los placeholders de rutas y los perfiles de comparación disponibles están definidos en `run_regression.py`.
 
-## Continuar el proyecto
+## Pruebas de rendimiento
 
-El repositorio contiene actualmente un traductor *source-to-source* funcional para programas C anotados con pragmas OpenMPD. Cubre el flujo principal de traducción: preprocesado y recogida de símbolos, parsing de pragmas, reconstrucción del fuente, generación del ciclo de vida MPI, bucles distribuidos, movimiento colectivo de datos, reducciones, gestión de memoria, declaraciones de tipos MPI, intercambio de halos y tasking asíncrono basado en runtime.
+Las pruebas de rendimiento usan los mismos números de procesos e hilos para todos los ejemplos:
 
-La forma recomendada de empezar es construir `fparse`, traducir un ejemplo pequeño y comparar el programa MPI generado con el fuente OpenMPD original. Después conviene leer la sección de arquitectura y seguir el recorrido de ejecución por `main.cc`, `C99-scanner.lex`, `C99-parser.yacc`, `omplexer.ll`, `ompparser.yy` y `writer.h/.cc`. Para una directiva concreta, el siguiente paso es el módulo transform correspondiente: por ejemplo `distribute_transform`, `halo_transform`, `scatter_gather_transform`, `reduction_transform`, `memory_transform`, `mpi_type_transform` o `task_body_transform`.
+- `run_performance.py` fija 2, 4, 8, 12 y 24 como única escala de procesos e hilos.
+- `tests/performance/cases.tsv` enumera las variantes disponibles para cada ejemplo. Ningún caso puede definir una escala distinta.
+- Los ejemplos de topología fija, como `pipeline` (5 equipos) e `inventory_inout` (4 equipos), permanecen en las pruebas de regresión y no forman parte de las pruebas de rendimiento.
 
-Para trabajo orientado al comportamiento, `tests/regression/cases.tsv` es el mapa práctico del proyecto: muestra qué ejemplos se ejercitan ahora, qué argumentos necesitan, qué casos requieren el runtime de tasking y qué perfil de resultado se usa para comparar.
+Cada ejemplo tiene, por tanto, once medidas principales: una ejecución secuencial, cinco ejecuciones OpenMP con 2, 4, 8, 12 y 24 hilos, y cinco ejecuciones OpenMPD con el mismo número de procesos MPI. Usa `--include-ompd-openmp` para incluir las configuraciones OpenMPD+OpenMP disponibles.
+
+El plan completo puede revisarse sin compilar ni ejecutar nada:
+
+```sh
+python3 tests/performance/run_performance.py --plan
+```
+
+Para ver todas las opciones de la línea de comandos:
+
+```sh
+python3 tests/performance/run_performance.py --help
+```
+
+Ejecuta todos los casos de `tests/performance/cases.tsv`. Por defecto, el script mide las variantes secuencial, OpenMP y OpenMPD y crea un CSV con fecha y hora en `tests/performance/results/` y un directorio de logs con el mismo nombre y el sufijo `.logs`:
+
+```sh
+python3 tests/performance/run_performance.py
+```
+
+El script construye `fparse`; no es necesario indicar una ruta de salida.
+
+Ejecuta solo los casos de la familia `base`:
+
+```sh
+python3 tests/performance/run_performance.py --family base
+```
+
+La variante `ompd` es el programa MPI generado por OpenMPD. Una variante `mpi` distinta es una implementación MPI escrita a mano y se excluye por defecto. Se puede añadir con `--include-mpi`. Usa `--include-ompd-openmp` para las configuraciones híbridas disponibles. Si no existe una implementación MPI manual, indica `-` en `mpi_source` y omite `mpi` y `mpi_omp` de `variants`.
+
+Antes de medir una configuración, el script la ejecuta una vez sin `perf` como comprobación previa. Así detecta un fallo inmediato de ejecución y esa ejecución no entra en la media medida. Su salida estándar y sus errores se guardan en ficheros cuyos nombres contienen `warmup`.
+
+Después, el script ejecuta la misma configuración cinco veces con `perf stat`. Cada fila del CSV contiene dos medias. `mean_seconds` incluye el lanzador y el ciclo de vida de MPI. `calculation_mean_seconds` usa el valor `OMPD_CALC_TIME_SECONDS=<segundos>` que imprime el ejemplo alrededor del cálculo. El script exige un valor en cada ejecución medida.
+
+## Notas de desarrollo
+
+Para estudiar el traductor, construye `fparse`, traduce un ejemplo pequeño y compara el programa MPI generado con su fuente OpenMPD. El recorrido principal pasa por `main.cc`, `C99-scanner.lex`, `C99-parser.yacc`, `omplexer.ll`, `ompparser.yy` y `writer.cc`. Después, cada directiva se trata en su módulo transform correspondiente.
+
+`tests/regression/cases.tsv` ofrece una lista práctica de los ejemplos soportados, sus argumentos, dependencias de runtime y métodos de comparación.
 
 Trabajo futuro:
 
@@ -920,4 +1038,4 @@ Trabajo futuro:
 - Definir qué construcciones OpenMPD pueden combinarse con tasking. El parser actual mantiene los clusters con tasking en un camino separado y rechaza algunos pragmas no-task al mismo nivel del cluster.
 - Ampliar el soporte de halo más allá de repartos por filas, incluyendo distribuciones bidimensionales, columnas y descomposiciones por bloques.
 - Mejorar la gestión de memoria del traductor. Valgrind sigue mostrando memoria sin liberar al terminar el proceso, sobre todo alrededor de los objetos `symbol_info` de la tabla de símbolos; el código necesita una regla más clara sobre qué parte crea esos objetos y qué parte debe liberarlos.
-- Estudiar una refactorización mayor hacia una representación intermedia en vez de transformar el fuente línea a línea durante el parseo. Es un cambio arquitectónico costoso, pero se acerca más a cómo los compiladores modernos separan el análisis de la generación de código, y podría hacer más robusta la traducción de cuerpos de tarea, las comprobaciones semánticas y la generación de MPI.
+- Considerar una representación intermedia en vez de transformar el fuente línea a línea durante el parseo. Esto separaría el análisis de la generación de código y podría simplificar la traducción de cuerpos de tarea, las comprobaciones semánticas y la generación de MPI.

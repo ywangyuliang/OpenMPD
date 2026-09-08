@@ -170,6 +170,7 @@ int main ( int argc, char *argv[] )
 
   printf ( "\n" );
   printf ( "  Elapsed cpu time: %f seconds.\n", ctime );
+  printf("OMPD_CALC_TIME_SECONDS=%.9f\n", ctime);
   free ( acc );
   free ( force );
   free ( pos );

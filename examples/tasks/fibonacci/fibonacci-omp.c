@@ -82,5 +82,7 @@ int main(int argc, char **argv)
 	fprintf(stdout, "time: %f seconds\n", elapsed_time);
 #endif
 
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", elapsed_time);
+
     return 0;
 }

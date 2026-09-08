@@ -91,6 +91,9 @@ task_body_stmt_t *task_body_stmt_make_expr(task_body_expr_t *expr);
 /* Creates a compound statement from a statement list */
 task_body_stmt_t *task_body_stmt_make_compound(task_body_stmt_list_t *items);
 
+/* Creates an if statement with an optional else branch */
+task_body_stmt_t *task_body_stmt_make_if(task_body_expr_t *condition, task_body_stmt_t *then_stmt, task_body_stmt_t *else_stmt);
+
 /* Creates an empty declaration statement */
 task_body_stmt_t *task_body_stmt_make_declaration();
 

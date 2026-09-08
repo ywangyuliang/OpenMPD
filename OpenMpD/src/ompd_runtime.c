@@ -53,7 +53,8 @@ typedef enum {
 
 typedef enum {
     OMPD_DEP_KIND_INPUT = 1,
-    OMPD_DEP_KIND_OUTPUT
+    OMPD_DEP_KIND_OUTPUT,
+    OMPD_DEP_KIND_INOUT
 } ompd_dep_kind_t;
 
 /* Reply the scheduler sends to a worker's work request */
@@ -69,6 +70,8 @@ typedef struct {
     int element_index;
     size_t value_size;
     char name[OMPD_MAX_NAME_LEN];
+    int has_initial_value;
+    unsigned char initial_value[OMPD_MAX_VALUE_SIZE];
 } ompd_task_dep_t;
 
 /* Scheduler-side record of one task and its state */
@@ -87,6 +90,9 @@ typedef struct {
 
     int output_dep_count;
     ompd_task_dep_t **output_deps;
+
+    int inout_dep_count;
+    ompd_task_dep_t **inout_deps;
 
     int pending_dep_count;
     int unfinished_child_count;
@@ -107,13 +113,14 @@ typedef struct {
 
     int waiters_count;
     ompd_task_id_t *waiting_task_ids;
+    ompd_task_id_t *waiting_producer_task_ids;
 
     int has_value;
     size_t stored_value_size;
     unsigned char *stored_value;
 } ompd_dep_record_t;
 
-/* Ring-buffer queue of task ids (used as the ready queue) */
+/* Ring-buffer work list of task ids (newest ready task is scheduled first) */
 typedef struct {
     ompd_task_id_t *values;
     int head;
@@ -140,6 +147,8 @@ typedef struct {
     int element_index;
     size_t value_size;
     char name[OMPD_MAX_NAME_LEN];
+    int has_initial_value;
+    unsigned char initial_value[OMPD_MAX_VALUE_SIZE];
 } ompd_sched_register_dep_request_t;
 
 typedef struct {
@@ -188,6 +197,7 @@ typedef struct {
 
 typedef struct {
     int kind;
+    ompd_task_id_t preferred_parent_task_id;
 } ompd_sched_work_request_t;
 
 static ompd_rank_t ompd_world_rank = -1;
@@ -207,6 +217,7 @@ static int ompd_region_num_teams = 0;
 static void ompd_runtime_abort(const char *message) {
     fprintf(stderr, "OMPD runtime error: %s\n", message);
     MPI_Abort(MPI_COMM_WORLD, 1);
+    abort();
 }
 
 static ompd_task_record_t *ompd_create_task_record(ompd_task_id_t task_id) {
@@ -236,6 +247,14 @@ static ompd_task_record_t *ompd_create_task_record(ompd_task_id_t task_id) {
         free(task->input_deps);
         free(task);
         ompd_runtime_abort("cannot allocate output dependency pointer vector");
+    }
+
+    task->inout_deps = (ompd_task_dep_t **) calloc(OMPD_MAX_DEPS_PER_TASK, sizeof(*task->inout_deps));
+    if(task->inout_deps == NULL) {
+        free(task->output_deps);
+        free(task->input_deps);
+        free(task);
+        ompd_runtime_abort("cannot allocate inout dependency pointer vector");
     }
 
     ompd_tasks[task_id] = task;
@@ -272,6 +291,16 @@ static void ompd_destroy_task_record(ompd_task_record_t *task) {
         task->output_deps = NULL;
     }
 
+    if(task->inout_deps != NULL) {
+        for(i = 0; i < task->inout_dep_count; ++i) {
+            free(task->inout_deps[i]);
+            task->inout_deps[i] = NULL;
+        }
+
+        free(task->inout_deps);
+        task->inout_deps = NULL;
+    }
+
     free(task);
 }
 
@@ -297,8 +326,16 @@ static ompd_dep_record_t *ompd_create_dep_record(ompd_dep_key_t dep_key) {
         ompd_runtime_abort("cannot allocate dependency waiters vector");
     }
 
+    dep->waiting_producer_task_ids = (ompd_task_id_t *) calloc(OMPD_MAX_WAITERS_PER_KEY, sizeof(*dep->waiting_producer_task_ids));
+    if(dep->waiting_producer_task_ids == NULL) {
+        free(dep->waiting_task_ids);
+        free(dep);
+        ompd_runtime_abort("cannot allocate dependency waiter producer vector");
+    }
+
     dep->stored_value = (unsigned char *) malloc(OMPD_MAX_VALUE_SIZE);
     if(dep->stored_value == NULL) {
+        free(dep->waiting_producer_task_ids);
         free(dep->waiting_task_ids);
         free(dep);
         ompd_runtime_abort("cannot allocate dependency stored value buffer");
@@ -315,6 +352,9 @@ static void ompd_destroy_dep_record(ompd_dep_record_t *dep) {
 
     free(dep->waiting_task_ids);
     dep->waiting_task_ids = NULL;
+
+    free(dep->waiting_producer_task_ids);
+    dep->waiting_producer_task_ids = NULL;
 
     free(dep->stored_value);
     dep->stored_value = NULL;
@@ -463,9 +503,57 @@ static ompd_task_id_t ompd_queue_pop(ompd_int_queue_t *queue) {
         ompd_runtime_abort("ready queue empty");
     }
 
-    value = queue->values[queue->head];
-    queue->head = (queue->head + 1) % OMPD_MAX_TASKS;
+    queue->tail = (queue->tail - 1 + OMPD_MAX_TASKS) % OMPD_MAX_TASKS;
+    value = queue->values[queue->tail];
     return value;
+}
+
+static int ompd_task_is_descendant_of(ompd_task_id_t task_id, ompd_task_id_t ancestor_task_id) {
+    if(ancestor_task_id < 0) {
+        return 1;
+    }
+
+    while(task_id != ancestor_task_id) {
+        if(task_id == 0) {
+            return 0;
+        }
+
+        task_id = ompd_tasks[task_id]->parent_task_id;
+    }
+
+    return 1;
+}
+
+static ompd_task_id_t ompd_queue_pop_for_ancestor(ompd_int_queue_t *queue, ompd_task_id_t ancestor_task_id) {
+    int index;
+    int next;
+    ompd_task_id_t task_id;
+
+    if(ancestor_task_id < 0) {
+        return ompd_queue_pop(queue);
+    }
+
+    index = queue->tail;
+    while(index != queue->head) {
+        index = (index - 1 + OMPD_MAX_TASKS) % OMPD_MAX_TASKS;
+        task_id = queue->values[index];
+
+        if(!ompd_task_is_descendant_of(task_id, ancestor_task_id)) {
+            continue;
+        }
+
+        next = (index + 1) % OMPD_MAX_TASKS;
+        while(next != queue->tail) {
+            queue->values[index] = queue->values[next];
+            index = next;
+            next = (next + 1) % OMPD_MAX_TASKS;
+        }
+
+        queue->tail = (queue->tail - 1 + OMPD_MAX_TASKS) % OMPD_MAX_TASKS;
+        return task_id;
+    }
+
+    return -1;
 }
 
 static int ompd_scheduler_build_task(ompd_task_kind_t parent_task_id, ompd_task_kind_t generated_task_kind, const void *task_input_data, size_t task_input_data_size) {
@@ -515,7 +603,7 @@ static ompd_task_record_t *ompd_get_task(ompd_task_id_t task_id) {
     return ompd_tasks[task_id];
 }
 
-static void ompd_add_task_dep(ompd_task_record_t *task, ompd_dep_kind_t dep_kind, const char *name, int has_index, int element_index, size_t value_size) {
+static void ompd_add_task_dep(ompd_task_record_t *task, ompd_dep_kind_t dep_kind, const char *name, int has_index, int element_index, size_t value_size, const void *initial_value) {
     ompd_task_dep_t *dep;
 
     dep = (ompd_task_dep_t *) calloc(1, sizeof(*dep));
@@ -528,6 +616,15 @@ static void ompd_add_task_dep(ompd_task_record_t *task, ompd_dep_kind_t dep_kind
     dep->value_size = value_size;
     ompd_copy_name(dep->name, name);
 
+    if(initial_value != NULL) {
+        if(value_size == 0 || value_size > OMPD_MAX_VALUE_SIZE) {
+            free(dep);
+            ompd_runtime_abort("invalid initial inout dependency value size");
+        }
+        memcpy(dep->initial_value, initial_value, value_size);
+        dep->has_initial_value = 1;
+    }
+
     if(dep_kind == OMPD_DEP_KIND_INPUT) {
         if(task->input_dep_count >= OMPD_MAX_DEPS_PER_TASK) {
             free(dep);
@@ -535,13 +632,20 @@ static void ompd_add_task_dep(ompd_task_record_t *task, ompd_dep_kind_t dep_kind
         }
 
         task->input_deps[task->input_dep_count++] = dep;
-    } else {
+    } else if(dep_kind == OMPD_DEP_KIND_OUTPUT) {
         if(task->output_dep_count >= OMPD_MAX_DEPS_PER_TASK) {
             free(dep);
             ompd_runtime_abort("too many output dependencies on task");
         }
 
         task->output_deps[task->output_dep_count++] = dep;
+    } else {
+        if(task->inout_dep_count >= OMPD_MAX_DEPS_PER_TASK) {
+            free(dep);
+            ompd_runtime_abort("too many inout dependencies on task");
+        }
+
+        task->inout_deps[task->inout_dep_count++] = dep;
     }
 }
 
@@ -617,6 +721,18 @@ static int ompd_find_task_output_dep_by_name(const ompd_task_record_t *task, con
     return -1;
 }
 
+static int ompd_find_task_inout_dep_by_name(const ompd_task_record_t *task, const char *name) {
+    int i;
+
+    for (i = 0; i < task->inout_dep_count; i++) {
+        if(task->inout_deps[i] != NULL && strcmp(task->inout_deps[i]->name, name) == 0) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 static int ompd_scheduler_find_send_key(ompd_task_id_t current_task_id, const char *name) {
     ompd_task_record_t *task;
     int dep_index;
@@ -628,15 +744,24 @@ static int ompd_scheduler_find_send_key(ompd_task_id_t current_task_id, const ch
     task = ompd_get_task(current_task_id);
     dep_index = ompd_find_task_output_dep_by_name(task, name);
 
+    if(dep_index >= 0) {
+        return ompd_find_dep_key(
+            task->parent_task_id,
+            task->output_deps[dep_index]->name,
+            task->output_deps[dep_index]->has_index,
+            task->output_deps[dep_index]->element_index);
+    }
+
+    dep_index = ompd_find_task_inout_dep_by_name(task, name);
     if(dep_index < 0) {
-        ompd_runtime_abort("send value not registered as task output");
+        ompd_runtime_abort("send value not registered as task output or inout");
     }
 
     return ompd_find_dep_key(
         task->parent_task_id,
-        task->output_deps[dep_index]->name,
-        task->output_deps[dep_index]->has_index,
-        task->output_deps[dep_index]->element_index);
+        task->inout_deps[dep_index]->name,
+        task->inout_deps[dep_index]->has_index,
+        task->inout_deps[dep_index]->element_index);
 }
 
 static int ompd_find_task_input_dep_by_name(const ompd_task_record_t *task, const char *name) {
@@ -683,6 +808,21 @@ static int ompd_scheduler_find_recv_key(ompd_task_id_t current_task_id, const ch
         return dep_key;
     }
 
+    dep_index = ompd_find_task_inout_dep_by_name(task, name);
+    if(dep_index >= 0) {
+        dep_key = ompd_find_dep_key(
+            task->parent_task_id,
+            task->inout_deps[dep_index]->name,
+            task->inout_deps[dep_index]->has_index,
+            task->inout_deps[dep_index]->element_index);
+
+        if(dep_key < 0) {
+            ompd_runtime_abort("recv inout dependency key not found");
+        }
+
+        return dep_key;
+    }
+
     dep_key = ompd_find_dep_key(current_task_id, name, 0, 0);
     if(dep_key >= 0) {
         return dep_key;
@@ -692,7 +832,7 @@ static int ompd_scheduler_find_recv_key(ompd_task_id_t current_task_id, const ch
     return -1;
 }
 
-static void ompd_scheduler_register_waiter(ompd_dep_key_t dep_key, ompd_task_id_t task_id) {
+static void ompd_scheduler_register_waiter(ompd_dep_key_t dep_key, ompd_task_id_t producer_task_id, ompd_task_id_t task_id) {
     ompd_dep_record_t *dep = ompd_deps[dep_key];
 
     if(dep == NULL || !dep->active) {
@@ -703,7 +843,25 @@ static void ompd_scheduler_register_waiter(ompd_dep_key_t dep_key, ompd_task_id_
         ompd_runtime_abort("too many waiters on dependency key");
     }
 
-    dep->waiting_task_ids[dep->waiters_count++] = task_id;
+    dep->waiting_task_ids[dep->waiters_count] = task_id;
+    dep->waiting_producer_task_ids[dep->waiters_count] = producer_task_id;
+    dep->waiters_count++;
+}
+
+static void ompd_scheduler_wait_for_last_producer(ompd_task_record_t *task, ompd_dep_key_t dep_key) {
+    ompd_task_id_t producer_task_id;
+    ompd_task_record_t *producer;
+
+    producer_task_id = ompd_deps[dep_key]->last_producer_task_id;
+    if(producer_task_id == 0) {
+        return;
+    }
+
+    producer = ompd_get_task(producer_task_id);
+    if(producer->state != OMPD_TASK_STATE_DONE) {
+        task->pending_dep_count++;
+        ompd_scheduler_register_waiter(dep_key, producer_task_id, task->task_id);
+    }
 }
 
 static void ompd_scheduler_make_ready_or_blocked(ompd_task_record_t *task) {
@@ -719,7 +877,8 @@ static void ompd_scheduler_submit_task(ompd_task_id_t task_id) {
     int i;
     ompd_dep_key_t dep_key;
     ompd_task_record_t *task;
-    ompd_task_record_t *producer;
+    ompd_task_dep_t *task_dep;
+    ompd_dep_record_t *dep;
 
     task = ompd_get_task(task_id);
 
@@ -742,14 +901,7 @@ static void ompd_scheduler_submit_task(ompd_task_id_t task_id) {
             task->input_deps[i]->element_index,
             task->input_deps[i]->value_size);
 
-        if(ompd_deps[dep_key]->last_producer_task_id != 0) {
-            producer = ompd_get_task(ompd_deps[dep_key]->last_producer_task_id);
-
-            if(producer->state != OMPD_TASK_STATE_DONE) {
-                task->pending_dep_count++;
-                ompd_scheduler_register_waiter(dep_key, task_id);
-            }
-        }
+        ompd_scheduler_wait_for_last_producer(task, dep_key);
     }
 
     for(i = 0; i < task->output_dep_count; ++i) {
@@ -764,18 +916,36 @@ static void ompd_scheduler_submit_task(ompd_task_id_t task_id) {
             task->output_deps[i]->element_index,
             task->output_deps[i]->value_size);
 
-        if(ompd_deps[dep_key]->last_producer_task_id != 0) {
-            producer = ompd_get_task(ompd_deps[dep_key]->last_producer_task_id);
-
-            if(producer->state != OMPD_TASK_STATE_DONE) {
-                task->pending_dep_count++;
-                ompd_scheduler_register_waiter(dep_key, task_id);
-            }
-        }
+        ompd_scheduler_wait_for_last_producer(task, dep_key);
 
         ompd_deps[dep_key]->last_producer_task_id = task_id;
-        ompd_deps[dep_key]->has_value = 0;
-        ompd_deps[dep_key]->stored_value_size = 0;
+    }
+
+    for(i = 0; i < task->inout_dep_count; ++i) {
+        task_dep = task->inout_deps[i];
+        if(task_dep == NULL) {
+            ompd_runtime_abort("null inout dependency on task");
+        }
+
+        dep_key = ompd_get_or_create_dep_key(
+            task->parent_task_id,
+            task_dep->name,
+            task_dep->has_index,
+            task_dep->element_index,
+            task_dep->value_size);
+        dep = ompd_deps[dep_key];
+
+        if(dep->last_producer_task_id == 0 && !dep->has_value) {
+            if(!task_dep->has_initial_value) {
+                ompd_runtime_abort("first inout dependency has no initial value");
+            }
+            memcpy(dep->stored_value, task_dep->initial_value, task_dep->value_size);
+            dep->stored_value_size = task_dep->value_size;
+            dep->has_value = 1;
+        }
+
+        ompd_scheduler_wait_for_last_producer(task, dep_key);
+        dep->last_producer_task_id = task_id;
     }
 
     ompd_scheduler_make_ready_or_blocked(task);
@@ -801,7 +971,7 @@ static void ompd_scheduler_store_value(ompd_task_id_t current_task_id, const cha
     ompd_deps[dep_key]->has_value = 1;
 }
 
-static void ompd_scheduler_wake_tasks_waiting_on_dep(ompd_dep_key_t dep_key) {
+static void ompd_scheduler_wake_tasks_waiting_on_dep(ompd_dep_key_t dep_key, ompd_task_id_t finished_task_id) {
     
     int j;
     ompd_dep_record_t *dep;
@@ -818,6 +988,10 @@ static void ompd_scheduler_wake_tasks_waiting_on_dep(ompd_dep_key_t dep_key) {
     }
 
     for (j = 0; j < dep->waiters_count; j++) {
+        if(dep->waiting_producer_task_ids[j] != finished_task_id) {
+            continue;
+        }
+
         task = ompd_get_task(dep->waiting_task_ids[j]);
 
         if(task->pending_dep_count > 0) {
@@ -830,7 +1004,19 @@ static void ompd_scheduler_wake_tasks_waiting_on_dep(ompd_dep_key_t dep_key) {
         }
     }
 
-    dep->waiters_count = 0;
+    for (j = 0; j < dep->waiters_count; ) {
+        int last_index;
+
+        if(dep->waiting_producer_task_ids[j] != finished_task_id) {
+            j++;
+            continue;
+        }
+
+        last_index = dep->waiters_count - 1;
+        dep->waiting_task_ids[j] = dep->waiting_task_ids[last_index];
+        dep->waiting_producer_task_ids[j] = dep->waiting_producer_task_ids[last_index];
+        dep->waiters_count--;
+    }
 }
 
 static void ompd_scheduler_wake_tasks_waiting_on(ompd_task_id_t finished_task_id) {
@@ -852,8 +1038,24 @@ static void ompd_scheduler_wake_tasks_waiting_on(ompd_task_id_t finished_task_id
             finished_task->output_deps[i]->has_index,
             finished_task->output_deps[i]->element_index);
 
-        if(dep_key >= 0 && ompd_deps[dep_key] != NULL && ompd_deps[dep_key]->last_producer_task_id == finished_task_id) {
-            ompd_scheduler_wake_tasks_waiting_on_dep(dep_key);
+        if(dep_key >= 0 && ompd_deps[dep_key] != NULL) {
+            ompd_scheduler_wake_tasks_waiting_on_dep(dep_key, finished_task_id);
+        }
+    }
+
+    for(i = 0; i < finished_task->inout_dep_count; i++) {
+        if(finished_task->inout_deps[i] == NULL) {
+            continue;
+        }
+
+        dep_key = ompd_find_dep_key(
+            finished_task->parent_task_id,
+            finished_task->inout_deps[i]->name,
+            finished_task->inout_deps[i]->has_index,
+            finished_task->inout_deps[i]->element_index);
+
+        if(dep_key >= 0 && ompd_deps[dep_key] != NULL) {
+            ompd_scheduler_wake_tasks_waiting_on_dep(dep_key, finished_task_id);
         }
     }
 }
@@ -936,7 +1138,7 @@ static void ompd_scheduler_send_shutdown_to_worker(ompd_rank_t worker_rank) {
     MPI_Send(&work_reply, sizeof(work_reply), MPI_BYTE, worker_rank, OMPD_MPI_TAG_WORK_REPLY, MPI_COMM_WORLD);
 }
 
-static void ompd_scheduler_reply_to_work_request(ompd_rank_t worker_rank) {
+static void ompd_scheduler_reply_to_work_request(ompd_rank_t worker_rank, ompd_task_id_t preferred_parent_task_id) {
     ompd_sched_work_reply_t work_reply;
     ompd_task_record_t *task;
     ompd_task_id_t task_id;
@@ -949,7 +1151,19 @@ static void ompd_scheduler_reply_to_work_request(ompd_rank_t worker_rank) {
         return;
     }
 
-    task_id = ompd_queue_pop(ompd_ready_queue);
+    if(preferred_parent_task_id >= 0 && ompd_get_task(preferred_parent_task_id)->unfinished_child_count == 0) {
+        work_reply.kind = OMPD_WORK_IDLE;
+        MPI_Send(&work_reply, sizeof(work_reply), MPI_BYTE, worker_rank, OMPD_MPI_TAG_WORK_REPLY, MPI_COMM_WORLD);
+        return;
+    }
+
+    task_id = ompd_queue_pop_for_ancestor(ompd_ready_queue, preferred_parent_task_id);
+    if(task_id < 0) {
+        work_reply.kind = OMPD_WORK_IDLE;
+        MPI_Send(&work_reply, sizeof(work_reply), MPI_BYTE, worker_rank, OMPD_MPI_TAG_WORK_REPLY, MPI_COMM_WORLD);
+        return;
+    }
+
     task = ompd_get_task(task_id);
 
     task->state = OMPD_TASK_STATE_RUNNING;
@@ -1057,6 +1271,7 @@ static void ompd_scheduler_loop() {
     ompd_sched_recv_value_request_t recv_value_request;
     ompd_sched_recv_value_reply_t recv_value_reply;
     ompd_sched_task_done_request_t task_done_request;
+    ompd_sched_work_request_t work_request;
 
     shutdown_requested = 0;
     shutdown_reply_count = 0;
@@ -1130,7 +1345,8 @@ static void ompd_scheduler_loop() {
                     register_dep_request.name,
                     register_dep_request.has_index,
                     register_dep_request.element_index,
-                    register_dep_request.value_size);
+                    register_dep_request.value_size,
+                    register_dep_request.has_initial_value ? register_dep_request.initial_value : NULL);
                 break;
             
             case OMPD_SCHED_SUBMIT_TASK:
@@ -1257,11 +1473,22 @@ static void ompd_scheduler_loop() {
                 break;
             
             case OMPD_SCHED_WORK_REQUEST:
+                memset(&work_request, 0, sizeof(work_request));
+                work_request.kind = sched_kind;
+
+                MPI_Recv(((unsigned char *) &work_request) + sizeof(int),
+                        sizeof(work_request) - sizeof(int),
+                        MPI_BYTE,
+                        status.MPI_SOURCE,
+                        OMPD_MPI_TAG_REQ,
+                        MPI_COMM_WORLD,
+                        MPI_STATUS_IGNORE);
+
                 if(shutdown_requested) {
                     ompd_scheduler_send_shutdown_to_worker(status.MPI_SOURCE);
                     shutdown_reply_count++;
                 } else {
-                    ompd_scheduler_reply_to_work_request(status.MPI_SOURCE);
+                    ompd_scheduler_reply_to_work_request(status.MPI_SOURCE, work_request.preferred_parent_task_id);
                 }
 
                 break;
@@ -1282,6 +1509,14 @@ static void ompd_scheduler_loop() {
                     MPI_Recv(&next_kind, 1, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, &worker_status);
 
                     if(next_kind == OMPD_SCHED_WORK_REQUEST) {
+                        MPI_Recv(((unsigned char *) &work_request) + sizeof(int),
+                                sizeof(work_request) - sizeof(int),
+                                MPI_BYTE,
+                                worker_status.MPI_SOURCE,
+                                OMPD_MPI_TAG_REQ,
+                                MPI_COMM_WORLD,
+                                MPI_STATUS_IGNORE);
+
                         ompd_scheduler_send_shutdown_to_worker(worker_status.MPI_SOURCE);
                         shutdown_reply_count++;
                         continue;
@@ -1327,8 +1562,15 @@ static void ompd_worker_loop() {
 
     while (1) {
         work_request.kind = OMPD_SCHED_WORK_REQUEST;
+        work_request.preferred_parent_task_id = -1;
 
         MPI_Send(&work_request.kind, 1, MPI_INT, OMPD_SCHEDULER_RANK, OMPD_MPI_TAG_REQ, MPI_COMM_WORLD);
+        MPI_Send(((unsigned char *) &work_request) + sizeof(int),
+                sizeof(work_request) - sizeof(int),
+                MPI_BYTE,
+                OMPD_SCHEDULER_RANK,
+                OMPD_MPI_TAG_REQ,
+                MPI_COMM_WORLD);
         MPI_Recv(&work_reply, sizeof(work_reply), MPI_BYTE, OMPD_SCHEDULER_RANK, OMPD_MPI_TAG_WORK_REPLY, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         if(work_reply.kind == OMPD_WORK_SHUTDOWN) {
@@ -1452,9 +1694,10 @@ ompd_task_id_t ompd_build_task(const ompd_task_definition_t *task_definition) {
     return build_task_reply.task_id;
 }
 
-static void ompd_register_dep_common(ompd_task_id_t task_id, ompd_dep_kind_t dep_kind, const char *name, int has_index, int element_index, size_t value_size) {
+static void ompd_register_dep_common(ompd_task_id_t task_id, ompd_dep_kind_t dep_kind, const char *name, int has_index, int element_index, size_t value_size, const void *initial_value) {
     ompd_sched_register_dep_request_t register_dep_request;
 
+    memset(&register_dep_request, 0, sizeof(register_dep_request));
     register_dep_request.kind = OMPD_SCHED_REGISTER_DEP;
     register_dep_request.task_id = task_id;
     register_dep_request.dep_kind = dep_kind;
@@ -1462,6 +1705,14 @@ static void ompd_register_dep_common(ompd_task_id_t task_id, ompd_dep_kind_t dep
     register_dep_request.element_index = element_index;
     register_dep_request.value_size = value_size;
     ompd_copy_name(register_dep_request.name, name);
+
+    if(initial_value != NULL) {
+        if(value_size == 0 || value_size > OMPD_MAX_VALUE_SIZE) {
+            ompd_runtime_abort("invalid initial inout value size");
+        }
+        memcpy(register_dep_request.initial_value, initial_value, value_size);
+        register_dep_request.has_initial_value = 1;
+    }
 
     MPI_Send(&register_dep_request.kind, 1, MPI_INT, OMPD_SCHEDULER_RANK, 0, MPI_COMM_WORLD);
 
@@ -1474,19 +1725,27 @@ static void ompd_register_dep_common(ompd_task_id_t task_id, ompd_dep_kind_t dep
 }
 
 void ompd_register_task_input_variable(ompd_task_id_t task_id, const char *name, size_t value_size) {
-    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INPUT, name, 0, 0, value_size);
+    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INPUT, name, 0, 0, value_size, NULL);
 }
 
 void ompd_register_task_output_variable(ompd_task_id_t task_id, const char *name, size_t value_size) {
-    ompd_register_dep_common(task_id, OMPD_DEP_KIND_OUTPUT, name, 0, 0, value_size);
+    ompd_register_dep_common(task_id, OMPD_DEP_KIND_OUTPUT, name, 0, 0, value_size, NULL);
+}
+
+void ompd_register_task_inout_variable(ompd_task_id_t task_id, const char *name, size_t value_size, const void *initial_value) {
+    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INOUT, name, 0, 0, value_size, initial_value);
 }
 
 void ompd_register_task_input_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size) {
-    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INPUT, name, 1, element_index, element_size);
+    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INPUT, name, 1, element_index, element_size, NULL);
 }
 
 void ompd_register_task_output_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size) {
-    ompd_register_dep_common(task_id, OMPD_DEP_KIND_OUTPUT, name, 1, element_index, element_size);
+    ompd_register_dep_common(task_id, OMPD_DEP_KIND_OUTPUT, name, 1, element_index, element_size, NULL);
+}
+
+void ompd_register_task_inout_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size, const void *initial_value) {
+    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INOUT, name, 1, element_index, element_size, initial_value);
 }
 
 void ompd_submit_task(ompd_task_id_t task_id) {
@@ -1533,8 +1792,15 @@ void ompd_wait_for_child_tasks() {
         }
 
         work_request.kind = OMPD_SCHED_WORK_REQUEST;
+        work_request.preferred_parent_task_id = waiting_task_id;
 
         MPI_Send(&work_request.kind, 1, MPI_INT,OMPD_SCHEDULER_RANK, OMPD_MPI_TAG_REQ, MPI_COMM_WORLD);
+        MPI_Send(((unsigned char *) &work_request) + sizeof(int),
+                sizeof(work_request) - sizeof(int),
+                MPI_BYTE,
+                OMPD_SCHEDULER_RANK,
+                OMPD_MPI_TAG_REQ,
+                MPI_COMM_WORLD);
 
         MPI_Recv(&work_reply,
                 sizeof(work_reply),

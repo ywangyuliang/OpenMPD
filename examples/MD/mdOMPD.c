@@ -3,6 +3,7 @@
 # include <stdlib.h>
 # include <time.h>
 # include <omp.h>
+# include <sys/time.h>
 
 int main ( int argc, char *argv[] );
 void compute ( int np, int nd, double pos[], double vel[],
@@ -39,7 +40,9 @@ int main ( int argc, char *argv[] )
     double start_time;
     double run_time;
   #else
-    double ctime;
+    struct timeval tv_start;
+    struct timeval tv_end;
+    double elapsed_time;
   #endif
 
   timestamp ( );
@@ -117,11 +120,10 @@ int main ( int argc, char *argv[] )
   step_print_index = 0;
   step_print_num = 10;
 
-  /* ctime = cpu_time ( ); */
   #ifdef _OPENMP
     start_time = omp_get_wtime();
   #else
-    ctime = cpu_time ( );
+    gettimeofday(&tv_start, NULL);
   #endif
 
   initialize ( np, nd, pos, vel, acc );
@@ -132,7 +134,7 @@ int main ( int argc, char *argv[] )
   {
     if ( step != 0 ) {
       update ( np, nd, pos, vel, force, acc, mass, dt );
-      #pragma omp cluster update allgather(pos[np*nd]:chunk(nd))
+      #pragma omp cluster update allgather(pos[np][nd])
     }
 
     compute ( np, nd, pos, vel, mass, force, &potential, &kinetic );
@@ -150,14 +152,16 @@ int main ( int argc, char *argv[] )
     }
   }
 } /* encluster = 0 */
-  /* ctime = cpu_time ( ) - ctime; */
   #ifdef _OPENMP
     run_time = omp_get_wtime() - start_time;
-    printf("\n Tiempo =  %f segundos\n",run_time);
+    printf("\n  Elapsed wall time: %f seconds.\n", run_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
   #else
-    ctime = cpu_time ( ) - ctime;
-    printf ( "\n" );
-    printf ( "  Elapsed cpu time: %f seconds.\n", ctime );
+    gettimeofday(&tv_end, NULL);
+    elapsed_time = (tv_end.tv_sec - tv_start.tv_sec)
+      + (tv_end.tv_usec - tv_start.tv_usec) / 1000000.0;
+    printf("\n  Elapsed wall time: %f seconds.\n", elapsed_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", elapsed_time);
   #endif
   free ( acc );
   free ( force );
@@ -187,7 +191,7 @@ void compute ( int np, int nd, double pos[], double vel[], double mass,
   pe = 0.0;
   ke = 0.0;
 
-#pragma omp cluster teams distribute reduction(+:pe) reduction(+:ke) dist_schedule (static,1)
+#pragma omp cluster teams distribute reduction(+:pe) reduction(+:ke) dist_schedule (static)
 #pragma omp parallel for simd private(i,k,j,d2,d,rij) schedule(static)
   for ( k = 0; k < np; k++ ) {
 /* Compute the potential energy and forces */
@@ -344,7 +348,7 @@ void update ( int np, int nd, double pos[], double vel[], double f[],
 
   rmass = 1.0 / mass;
 
-#pragma omp cluster teams distribute dist_schedule (static,1)
+#pragma omp cluster teams distribute dist_schedule (static)
 #pragma omp parallel for simd private(i,j) schedule(static)
   for ( j = 0; j < np; j++ ){
     for ( i = 0; i < nd; i++ )

@@ -5,10 +5,8 @@
 #include <math.h>
 #include <omp.h>
 
-typedef enum {
-    FILTER_GAUSSIAN,
-    FILTER_SOBEL
-} filter_t;
+#define FILTER_GAUSSIAN 0
+#define FILTER_SOBEL 1
 
 /* Gaussian 3x3 kernel */
 float gaussian3x3[3][3] = {
@@ -157,7 +155,6 @@ void read_pgm_data(const char *filename, int height, int width, float img[height
     fgetc(f);
 
     /* Read pixel data */
-    #pragma omp parallel for
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             unsigned char pixel;
@@ -201,38 +198,20 @@ void write_pgm(const char *filename, int height, int width, float img[height][wi
 int main(int argc, char *argv[])
 {
     int height, width;
-    int filter_dimension, halo_w, iterations;
+    int filter_dimension, halo_rows, iterations;
     #ifdef _OPENMP
         double start_time, run_time;
     #else
         struct timeval tv_start, tv_end;
         double run_time;
     #endif
-    filter_t filter_type;
+    int filter_type;
+    MPI_Request reqs;
+    MPI_Status status;
 
     /* Validate argument count */
     if (argc != 5 && argc != 6) {
-        fprintf(stderr,
-            "Uso:\n"
-            "  %s <filter_type> <filter_dimension> <input.pgm> <output.pgm> <iterations>\n\n"
-
-            "Argumentos:\n"
-            "  filter_type    Tipo de filtro a aplicar:\n"
-            "                 gaussian | g   -> Suavizado Gaussiano\n"
-            "                 sobel    | s   -> Detección de bordes Sobel\n\n"
-
-            "  filter_dimension  Dimensión del kernel cuadrado (valores permitidos: 3 o 5)\n"
-            "  input.pgm      Imagen de entrada en formato PGM (P5)\n"
-            "  output.pgm     Imagen de salida procesada\n\n"
-            "  iterations        Número de veces que se aplica el filtro\n"
-
-            "Ejemplos:\n"
-            "  %s gaussian 3 lenna.pgm output_OMP_g3x3.pgm\n"
-            "  %s g 5 lenna.pgm output_OMP_g5x5.pgm\n"
-            "  %s sobel 3 lenna.pgm output_OMP_s3x3.pgm\n"
-            "  %s s 5 lenna.pgm output_OMP_s5x5.pgm\n",
-            argv[0], argv[0], argv[0], argv[0], argv[0]
-        );
+        fprintf(stderr, "Uso:\n  %s <filter_type> <filter_dimension> <input.pgm> <output.pgm> [iterations]\n",argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -246,11 +225,13 @@ int main(int argc, char *argv[])
     }
 
     filter_dimension = atoi(argv[2]);
-    halo_w = filter_dimension/2;
-    iterations = 1;  /* default */
+    iterations = 1;
     if (argc == 6) {
         iterations = atoi(argv[5]);
     }
+    halo_rows = filter_dimension / 2;
+
+    #pragma omp cluster broad(filter_dimension,halo_rows,filter_type,iterations)
 
     /* Validate filter dimension */
     if (filter_dimension != 3 && filter_dimension != 5) {
@@ -268,24 +249,18 @@ int main(int argc, char *argv[])
     /* Read the PGM header Validate the input PGM and read image dimensions */
     read_pgm_header(input_file, &height, &width);
 
-    /* Allocate memory for the original and filtered images */
-    float (*img)[width] = malloc(height * sizeof(*img));
-    float (*filtered)[width] = malloc(height * sizeof(*filtered));
+    #pragma omp cluster broad(height, width)
 
-    /* Validate memory allocation */
-    if (!img || !filtered) {
-        perror("malloc");
-        free(img);
-        free(filtered);
-        exit(EXIT_FAILURE);
-    }
+    /* Allocate on the stack */
+    float img[height][width];
+    float filtered[height][width];
 
     /* Read image data */
     read_pgm_data(input_file, height, width, img);
 
     /* Compute norm for the Gaussian filter */
     float norm = 0.0f;
-    if (filter_type == FILTER_GAUSSIAN) {
+    if (filter_type==FILTER_GAUSSIAN) {
         if (filter_dimension == 3) {
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
@@ -300,6 +275,7 @@ int main(int argc, char *argv[])
             }
         }
     }
+
     /* Measure execution time */
     #ifdef _OPENMP
         start_time = omp_get_wtime();
@@ -307,66 +283,74 @@ int main(int argc, char *argv[])
         gettimeofday(&tv_start, NULL);
     #endif
 
-    /* Apply the selected filter */
-    for (int iter = 0; iter < iterations; iter++) {
-        #pragma omp parallel for
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
-                /* Keep border pixels unchanged */
-                if (i < halo_w || i >= height - halo_w ||
-                    j < halo_w || j >= width  - halo_w) {
-                    filtered[i][j] = img[i][j];
-                } else {
-                    /* GAUSSIAN FILTER */
-                    if (filter_type == FILTER_GAUSSIAN) {
-                        float sum = 0.0f;
-                        for (int ki = -halo_w; ki <= halo_w; ki++) {
-                            for (int kj = -halo_w; kj <= halo_w; kj++) {
-                                if (filter_dimension == 3) {
-                                    sum += img[i + ki][j + kj] *
-                                        gaussian3x3[ki + 1][kj + 1];
-                                } else { /* 5x5 */
-                                    sum += img[i + ki][j + kj] *
-                                        gaussian5x5[ki + 2][kj + 2];
+    #pragma omp cluster broad(img[height][width]) broad(norm) gather(img[height][width]) halo(img[height][width]:halo_rows*width)
+    {
+        /* Apply the selected filter */
+        for (int iter = 0; iter < iterations; iter++) {
+            #pragma omp cluster distribute
+            #pragma omp parallel for
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    /* Keep border pixels unchanged */
+                    if (i < halo_rows || i >= height - halo_rows ||
+                        j < halo_rows || j >= width  - halo_rows) {
+                        filtered[i][j] = img[i][j];
+                    } else {
+                        /* GAUSSIAN FILTER */
+                        if (filter_type==FILTER_GAUSSIAN) {
+                            float sum = 0.0f;
+
+                            for (int ki = -halo_rows; ki <= halo_rows; ki++) {
+                                for (int kj = -halo_rows; kj <= halo_rows; kj++) {
+                                    if (filter_dimension == 3) {
+                                        sum += img[i + ki][j + kj] *
+                                            gaussian3x3[ki + 1][kj + 1];
+                                    } else { /* 5x5 */
+                                        sum += img[i + ki][j + kj] *
+                                            gaussian5x5[ki + 2][kj + 2];
+                                    }
                                 }
                             }
+
+                            filtered[i][j] = sum / norm;
                         }
+                        /* SOBEL FILTER */
+                        if (filter_type==FILTER_SOBEL) {
+                            float gx = 0.0f;
+                            float gy = 0.0f;
 
-                        filtered[i][j] = sum / norm;
-                    }
-                    /* SOBEL FILTER */
-                    else if (filter_type == FILTER_SOBEL) {
-                        float gx = 0.0f;
-                        float gy = 0.0f;
-                        for (int ki = -halo_w; ki <= halo_w; ki++) {
-                            for (int kj = -halo_w; kj <= halo_w; kj++) {
+                            for (int ki = -halo_rows; ki <= halo_rows; ki++) {
+                                for (int kj = -halo_rows; kj <= halo_rows; kj++) {
 
-                                float pixel = img[i + ki][j + kj];
+                                    float pixel = img[i + ki][j + kj];
 
-                                if (filter_dimension == 3) {
-                                    gx += pixel * sobel3x3_x[ki + 1][kj + 1];
-                                    gy += pixel * sobel3x3_y[ki + 1][kj + 1];
-                                } else { /* 5x5 */
-                                    gx += pixel * sobel5x5_x[ki + 2][kj + 2];
-                                    gy += pixel * sobel5x5_y[ki + 2][kj + 2];
+                                    if (filter_dimension == 3) {
+                                        gx += pixel * sobel3x3_x[ki + 1][kj + 1];
+                                        gy += pixel * sobel3x3_y[ki + 1][kj + 1];
+                                    } else { /* 5x5 */
+                                        gx += pixel * sobel5x5_x[ki + 2][kj + 2];
+                                        gy += pixel * sobel5x5_y[ki + 2][kj + 2];
+                                    }
                                 }
                             }
-                        }
 
-                        /* Sobel gradient magnitude */
-                        float mag = sqrtf(gx * gx + gy * gy);
-                        if (mag > 255.0f) mag = 255.0f;
-                        if (mag < 0.0f)   mag = 0.0f;
-                        filtered[i][j] = mag;
+                            /* Sobel gradient magnitude */
+                            float mag = sqrtf(gx * gx + gy * gy);
+                            if (mag > 255.0f) mag = 255.0f;
+                            if (mag < 0.0f)   mag = 0.0f;
+                            filtered[i][j] = mag;
+                        }
                     }
                 }
             }
-        }
 
-        if (iter < iterations - 1) {
-            float (*tmp)[width] = img;
-            img = filtered;
-            filtered = tmp;
+            #pragma omp cluster distribute update halo(img[height][width]:halo_rows*width)
+            #pragma omp parallel for
+            for (int i = 0; i < height; i++) {
+                for (int j = 0; j < width; j++) {
+                    img[i][j] = filtered[i][j];
+                }
+            }
         }
     }
 
@@ -382,27 +366,26 @@ int main(int argc, char *argv[])
 
     printf("Imagen leida: %dx%d\n", width, height);
     printf("Filtro %s %dx%d completado en %f s\n",
-        (filter_type == FILTER_GAUSSIAN) ? "Gaussiano" : "Sobel",
+        filter_type==FILTER_GAUSSIAN?"gaussian":"sobel",
         filter_dimension,
         filter_dimension,
         run_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 
-    write_pgm(output_file, height, width, filtered);
+    write_pgm(output_file, height, width, img);
 
     char out_png[256];
     strncpy(out_png, output_file, sizeof(out_png) - 1);
     out_png[sizeof(out_png) - 1] = '\0';
 
-    char *dot = strrchr(out_png, '.');
+    char *dot;
+    dot= strrchr(out_png, '.');
     if (dot != NULL && strcmp(dot, ".pgm") == 0) {
         *dot = '\0';
     }
 
     printf("Para visualizar:\n");
     printf("convert %s %s.png\n", output_file, out_png);
-
-    free(img);
-    free(filtered);
 
     return 0;
 }

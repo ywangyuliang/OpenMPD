@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <math.h>
+#include <omp.h>
 
 typedef enum {
     FILTER_GAUSSIAN,
@@ -156,6 +157,7 @@ void read_pgm_data(const char *filename, int height, int width, float img[height
     fgetc(f);
 
     /* Read pixel data */
+    #pragma omp parallel for
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             unsigned char pixel;
@@ -200,31 +202,35 @@ int main(int argc, char *argv[])
 {
     int height, width;
     int filter_dimension, halo_w, iterations;
-    struct timeval tv_start, tv_end;
-    float elapsed;
+    #ifdef _OPENMP
+        double start_time, run_time;
+    #else
+        struct timeval tv_start, tv_end;
+        double run_time;
+    #endif
     filter_t filter_type;
 
     /* Validate argument count */
     if (argc != 5 && argc != 6) {
         fprintf(stderr,
             "Uso:\n"
-            "  %s <filter_type> <filter_dimension> <input.pgm> <output.pgm> [iterations]\n\n"
+            "  %s <filter_type> <filter_dimension> <input.pgm> <output.pgm> <iterations>\n\n"
 
             "Argumentos:\n"
-            "  filter_type       Tipo de filtro a aplicar:\n"
-            "                    gaussian | g   -> Suavizado Gaussiano\n"
-            "                    sobel    | s   -> Detección de bordes Sobel\n\n"
+            "  filter_type    Tipo de filtro a aplicar:\n"
+            "                 gaussian | g   -> Suavizado Gaussiano\n"
+            "                 sobel    | s   -> Detección de bordes Sobel\n\n"
 
-            "  filter_dimension Dimensión del kernel cuadrado (valores permitidos: 3 o 5)\n"
-            "  input.pgm        Imagen de entrada en formato PGM (P5)\n"
-            "  output.pgm       Imagen de salida procesada\n"
-            "  iterations   Número de veces que se aplica el filtro (default = 1)\n"
+            "  filter_dimension  Dimensión del kernel cuadrado (valores permitidos: 3 o 5)\n"
+            "  input.pgm      Imagen de entrada en formato PGM (P5)\n"
+            "  output.pgm     Imagen de salida procesada\n\n"
+            "  iterations        Número de veces que se aplica el filtro\n"
 
             "Ejemplos:\n"
-            "  %s gaussian 3 lenna.pgm output_SEQ_g3x3.pgm\n"
-            "  %s g 5 lenna.pgm output_SEQ_g5x5.pgm\n"
-            "  %s sobel 3 lenna.pgm output_SEQ_s3x3.pgm\n"
-            "  %s s 5 lenna.pgm output_SEQ_s5x5.pgm\n",
+            "  %s gaussian 3 lenna.pgm output_OMP_g3x3.pgm\n"
+            "  %s g 5 lenna.pgm output_OMP_g5x5.pgm\n"
+            "  %s sobel 3 lenna.pgm output_OMP_s3x3.pgm\n"
+            "  %s s 5 lenna.pgm output_OMP_s5x5.pgm\n",
             argv[0], argv[0], argv[0], argv[0], argv[0]
         );
         exit(EXIT_FAILURE);
@@ -240,7 +246,7 @@ int main(int argc, char *argv[])
     }
 
     filter_dimension = atoi(argv[2]);
-    halo_w = filter_dimension / 2;
+    halo_w = filter_dimension/2;
     iterations = 1;  /* default */
     if (argc == 6) {
         iterations = atoi(argv[5]);
@@ -252,7 +258,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
     if (iterations < 1) {
-        fprintf(stderr, "El número de iteraciones debe ser mayor o igual que 1\n");
+        fprintf(stderr, "iterations debe ser mayor o igual que 1\n");
         exit(EXIT_FAILURE);
     }
 
@@ -295,13 +301,18 @@ int main(int argc, char *argv[])
         }
     }
     /* Measure execution time */
-    gettimeofday(&tv_start, NULL);
+    #ifdef _OPENMP
+        start_time = omp_get_wtime();
+    #else
+        gettimeofday(&tv_start, NULL);
+    #endif
 
-    /* Apply the selected filter Each iteration uses the previous output as the next input */
+    /* Apply the selected filter */
     for (int iter = 0; iter < iterations; iter++) {
+        #pragma omp parallel for
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                /* Keep border pixels from the current input unchanged */
+                /* Keep border pixels unchanged */
                 if (i < halo_w || i >= height - halo_w ||
                     j < halo_w || j >= width  - halo_w) {
                     filtered[i][j] = img[i][j];
@@ -309,7 +320,6 @@ int main(int argc, char *argv[])
                     /* GAUSSIAN FILTER */
                     if (filter_type == FILTER_GAUSSIAN) {
                         float sum = 0.0f;
-
                         for (int ki = -halo_w; ki <= halo_w; ki++) {
                             for (int kj = -halo_w; kj <= halo_w; kj++) {
                                 if (filter_dimension == 3) {
@@ -328,7 +338,6 @@ int main(int argc, char *argv[])
                     else if (filter_type == FILTER_SOBEL) {
                         float gx = 0.0f;
                         float gy = 0.0f;
-
                         for (int ki = -halo_w; ki <= halo_w; ki++) {
                             for (int kj = -halo_w; kj <= halo_w; kj++) {
 
@@ -354,26 +363,32 @@ int main(int argc, char *argv[])
             }
         }
 
-        float (*tmp)[width] = img;
-        img = filtered;
-        filtered = tmp;
+        if (iter < iterations - 1) {
+            float (*tmp)[width] = img;
+            img = filtered;
+            filtered = tmp;
+        }
     }
 
     /* Measure execution time */
-    gettimeofday(&tv_end, NULL);
-
-    elapsed = (tv_end.tv_sec - tv_start.tv_sec)
-            + (tv_end.tv_usec - tv_start.tv_usec) / 1000000.0;
+    #ifdef _OPENMP
+        run_time = omp_get_wtime() - start_time;
+    #else
+        gettimeofday(&tv_end, NULL);
+        run_time = (tv_end.tv_sec - tv_start.tv_sec) * 1000000
+                + (tv_end.tv_usec - tv_start.tv_usec);
+        run_time = run_time / 1000000.0;
+    #endif
 
     printf("Imagen leida: %dx%d\n", width, height);
-    printf("Filtro %s %dx%d aplicado %d iteracion(es) en %f s\n",
+    printf("Filtro %s %dx%d completado en %f s\n",
         (filter_type == FILTER_GAUSSIAN) ? "Gaussiano" : "Sobel",
         filter_dimension,
         filter_dimension,
-        iterations,
-        elapsed);
+        run_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 
-    write_pgm(output_file, height, width, img);
+    write_pgm(output_file, height, width, filtered);
 
     char out_png[256];
     strncpy(out_png, output_file, sizeof(out_png) - 1);

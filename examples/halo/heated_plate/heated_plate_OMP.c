@@ -208,6 +208,7 @@ int main ( int argc, char *argv[] )
   while ( epsilon <= diff )
   {
 /*  Save the old solution in U */
+    #pragma omp parallel for private(j)
     for ( i = 0; i < M; i++ )
       for ( j = 0; j < N; j++ )
         u[i][j] = w[i][j];
@@ -215,6 +216,7 @@ int main ( int argc, char *argv[] )
 /* Determine the new estimate of the solution at the interior points The new solution W is the average of north, south, east and west neighbors */
 
     diff = 0.0;
+    #pragma omp parallel for private(aux_diff,j,i) reduction(max:diff)
     for ( i = 1; i < M - 1; i++ )
     {
       for ( j = 1; j < N - 1; j++ )
@@ -227,7 +229,7 @@ int main ( int argc, char *argv[] )
     iterations++;
     if ( iterations == iterations_print )
     {
-	    printf ( "  %8d  %lg\n", iterations, diff );
+      printf ( "  %8d  %lg\n", iterations, diff );
       iterations_print = 2 * iterations_print;
     }
   } /* end while epsilon */
@@ -246,6 +248,7 @@ int main ( int argc, char *argv[] )
   printf ( "\n" );
   printf ( "  Error tolerance achieved.\n" );
   printf("\n Tiempo version Secuencial = %lg s\n", run_time);
+  printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
 
 /* Write the solution to the output file */
   output = fopen(output_filename, "wt");

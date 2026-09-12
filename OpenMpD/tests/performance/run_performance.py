@@ -228,11 +228,12 @@ def safe_name(value):
 
 
 class Runner:
-    def __init__(self, args, cases, work_dir, logs_dir):
+    def __init__(self, args, cases, work_dir, logs_dir, warmup_logs_dir):
         self.args = args
         self.cases = cases
         self.work_dir = work_dir
         self.logs_dir = logs_dir
+        self.warmup_logs_dir = warmup_logs_dir
         self.rows = []
         self.failures = 0
 
@@ -438,10 +439,23 @@ class Runner:
         env.pop("XAUTHORITY", None)
         command = self.command(case, executable, variant, processes, threads, run_dir)
 
-        warmup_stdout = self.logs_dir / f"{safe_name(case.name)}--{label}.warmup.stdout.log"
-        warmup_stderr = self.logs_dir / f"{safe_name(case.name)}--{label}.warmup.stderr.log"
-        if run(command, run_dir, warmup_stdout, warmup_stderr, env):
-            self.fail(case, f"{label}-warmup", f"warm-up failed; see {warmup_stderr}")
+        warmup_stdout = self.warmup_logs_dir / f"{safe_name(case.name)}--{label}.stdout.log"
+        warmup_stderr = self.warmup_logs_dir / f"{safe_name(case.name)}--{label}.stderr.log"
+        warmup_returncode = run(command, run_dir, warmup_stdout, warmup_stderr, env)
+        if warmup_returncode:
+            stdout = warmup_stdout.read_text(encoding="utf-8", errors="replace").strip()
+            stderr = warmup_stderr.read_text(encoding="utf-8", errors="replace").strip()
+            diagnostics = " ".join(
+                part for part in (f"stderr: {stderr}" if stderr else "", f"stdout: {stdout}" if stdout else "")
+                if part
+            )
+            if diagnostics:
+                diagnostics = f"; {diagnostics}"
+            self.fail(
+                case,
+                f"{label}-warmup",
+                f"warm-up failed with exit code {warmup_returncode}{diagnostics}",
+            )
             return
 
         perf = ["perf", "stat", "-r", str(REPEATS), "--", *command]
@@ -517,7 +531,7 @@ def positive_list(value):
 
 
 def parse_args():
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     parser = argparse.ArgumentParser(
         description="Run the OpenMPD examples five times with perf and save their mean times."
     )
@@ -614,7 +628,7 @@ def format_points(configurations, case, variant):
 
 
 def print_plan(args, cases):
-    runner = Runner(args, cases, None, None)
+    runner = Runner(args, cases, None, None, None)
     totals = {"base": 0, "tasking": 0, "halo": 0}
     core_total = 0
     mpi_total = 0
@@ -698,16 +712,19 @@ def main():
         return 2
 
     logs_dir = args.output.with_name(f"{args.output.stem}.logs")
+    warmup_logs_dir = args.output.with_name(f"{args.output.stem}.warmup.logs")
     logs_dir.mkdir(parents=True, exist_ok=True)
+    warmup_logs_dir.mkdir(parents=True, exist_ok=True)
     (OPENMPD / "tmp").mkdir(exist_ok=True)
 
     with tempfile.TemporaryDirectory(prefix="ompd-performance-", dir=OPENMPD / "tmp") as work:
-        runner = Runner(args, cases, Path(work), logs_dir)
+        runner = Runner(args, cases, Path(work), logs_dir, warmup_logs_dir)
         runner.run_all()
 
     write_csv(args.output, runner.rows)
     print(f"\ncsv: {args.output}")
     print(f"logs: {logs_dir}")
+    print(f"warm-up logs: {warmup_logs_dir}")
     print(f"rows: {len(runner.rows)}")
     print(f"failures: {runner.failures}")
     return 1 if runner.failures else 0

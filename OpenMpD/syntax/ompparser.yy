@@ -2576,8 +2576,8 @@ cluster_clause : alloc_clause
 			   | {cluster_stack *c = cluster_stack_peek(); c->gather_clause_active = 1; chunk_pos = 0; pragma_args_begin_gather(); gather_clause_parsing = 1;} gather_clause {gather_clause_parsing = 0; if (!string_header_include_requested){string_header_include_requested = 1; string_header_request_include();}}
 			   | {cluster_stack *c = cluster_stack_peek(); c->allgather_clause_active = 1; chunk_pos = 0; pragma_args_begin_allgather(); allgather_clause_parsing = 1;} allgather_clause {allgather_clause_parsing = 0; if (!string_header_include_requested){string_header_include_requested = 1; string_header_request_include();}}
 			   | halo_clause
-			   | {cluster_stack *c = cluster_stack_peek(); c->reduction_clause_active = 1;} reduction_clause_cluster
-			   | {cluster_stack *c = cluster_stack_peek(); c->allreduction_clause_active = 1;} allreduction_clause_cluster
+			   | {cluster_stack *c = cluster_stack_peek(); c->reduction_clause_active = 1; cluster_reduction_active = 1;} reduction_clause_cluster {cluster_reduction_active = 0;}
+			   | {cluster_stack *c = cluster_stack_peek(); c->allreduction_clause_active = 1; cluster_allreduction_active = 1;} allreduction_clause_cluster {cluster_allreduction_active = 0;}
 			   ;
 
 cluster_data_clause : alloc_clause
@@ -2586,8 +2586,8 @@ cluster_data_clause : alloc_clause
 			              | {cluster_stack *c = cluster_stack_peek(); c->gather_clause_active = 1; chunk_pos = 0; pragma_args_begin_gather(); gather_clause_parsing = 1;} gather_clause {gather_clause_parsing = 0; if (!string_header_include_requested){string_header_include_requested = 1; string_header_request_include();}}
 			              | {cluster_stack *c = cluster_stack_peek(); c->allgather_clause_active = 1; chunk_pos = 0; pragma_args_begin_allgather(); allgather_clause_parsing = 1;} allgather_clause {allgather_clause_parsing = 0; if (!string_header_include_requested){string_header_include_requested = 1; string_header_request_include();}}
 			              | halo_clause
-			              | {cluster_stack *c = cluster_stack_peek(); c->reduction_clause_active = 1;} reduction_clause_cluster
-			              | {cluster_stack *c = cluster_stack_peek(); c->allreduction_clause_active = 1;} allreduction_clause_cluster
+			              | {cluster_stack *c = cluster_stack_peek(); c->reduction_clause_active = 1; cluster_reduction_active = 1;} reduction_clause_cluster {cluster_reduction_active = 0;}
+			              | {cluster_stack *c = cluster_stack_peek(); c->allreduction_clause_active = 1; cluster_allreduction_active = 1;} allreduction_clause_cluster {cluster_allreduction_active = 0;}
 				    ;
 
 cluster_update_clause : alloc_clause
@@ -2596,8 +2596,8 @@ cluster_update_clause : alloc_clause
 			              | {cluster_stack *c = cluster_stack_peek(); c->gather_clause_active = 1; chunk_pos = 0; pragma_args_begin_gather(); gather_clause_parsing = 1;} gather_clause {gather_clause_parsing = 0; if (!string_header_include_requested){string_header_include_requested = 1; string_header_request_include();}}
 			              | {cluster_stack *c = cluster_stack_peek(); c->allgather_clause_active = 1; pragma_args_begin_allgather(); allgather_clause_parsing = 1;} allgather_clause {allgather_clause_parsing = 0; if (!string_header_include_requested){string_header_include_requested = 1; string_header_request_include();}}
 			              | halo_clause
-			              | {cluster_stack *c = cluster_stack_peek(); c->reduction_clause_active = 1;} reduction_clause_cluster
-			              | {cluster_stack *c = cluster_stack_peek(); c->allreduction_clause_active = 1;} allreduction_clause_cluster
+			              | {cluster_stack *c = cluster_stack_peek(); c->reduction_clause_active = 1; cluster_reduction_active = 1;} reduction_clause_cluster {cluster_reduction_active = 0;}
+			              | {cluster_stack *c = cluster_stack_peek(); c->allreduction_clause_active = 1; cluster_allreduction_active = 1;} allreduction_clause_cluster {cluster_allreduction_active = 0;}
 				    ;
 
 cluster_teams_clause : if_target_clause

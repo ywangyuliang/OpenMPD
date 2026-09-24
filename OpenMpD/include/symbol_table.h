@@ -37,6 +37,7 @@ private:
     bool is_struct_symbol = false;
 	bool type_symbol_flag = false;
     vector<string> array_dimensions;
+    string allocated_size = "";
 
     task_body_expr_t *task_body_expr = nullptr;
     task_body_expr_t *task_init_expr = nullptr;
@@ -69,6 +70,7 @@ public:
 
         array_dimensions = std::vector<string>();
         array_dimensions = other.array_dimensions;
+        allocated_size = other.allocated_size;
 
         parameter_list = nullptr;
         if(other.parameter_list != nullptr){
@@ -192,6 +194,18 @@ public:
     /* Returns the raw array dimension list */
     vector<string> get_array_dimensions() {
         return array_dimensions;
+    }
+
+    void set_allocated_size(string size) {
+        allocated_size = size;
+    }
+
+    bool has_allocated_size() {
+        return !allocated_size.empty();
+    }
+
+    string get_allocated_size() {
+        return allocated_size;
     }
 
     /* Marks whether this symbol represents a function */

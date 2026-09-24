@@ -25,6 +25,10 @@ extern symbol_table table;
             vector<string> values = parse_array_reference_parts(std::string(arg));
             symbol_info *symbol = table.get_symbol_info(values.at(0));
 
+            if(symbol->is_pointer() && values.size() == 2){
+                symbol->set_allocated_size(values.at(1));
+            }
+
             allocation_code += "if (__taskid != 0) {\n";
             allocation_code += ("\t" + values.at(0) + " = (" + to_lowercase(symbol->get_variable_type()) + " ");
             for (long unsigned int j = 1; j < values.size(); j++) {
@@ -88,6 +92,9 @@ extern symbol_table table;
                 symbol_info *symbol = table.get_symbol_info(values.at(0));
                 if(symbol->is_array()){
                     broadcast_code += "MPI_Bcast(" + string(values.at(0)) + ", " + symbol->get_size_list() + ", " + mpi_type_for_c_type(symbol->get_variable_type())  + ", 0, MPI_COMM_WORLD);\n";
+                }
+                else if(symbol->has_allocated_size()){
+                    broadcast_code += "MPI_Bcast(" + string(values.at(0)) + ", " + symbol->get_allocated_size() + ", " + mpi_type_for_c_type(symbol->get_variable_type())  + ", 0, MPI_COMM_WORLD);\n";
                 }
                 else{
                     broadcast_code += "MPI_Bcast(&" + string(values.at(0)) + ", 1, " + mpi_type_for_c_type(symbol->get_variable_type()) + ", 0, MPI_COMM_WORLD);\n";

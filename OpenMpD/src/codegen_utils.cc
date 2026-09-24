@@ -4,7 +4,10 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iostream>
+
+extern std::ofstream errFile;
 
 std::vector<std::vector<std::string>> mpi_declared_types;
 
@@ -46,6 +49,11 @@ static int mpi_type_keyword_index(const string &keyword) {
     return -1;
 }
 
+static void mpi_type_not_declared(const string &type) {
+    fprintf(stderr, "MPI type not declared: %s\n", type.data());
+    errFile << "MPI type not declared: " << type << std::endl;
+}
+
 string mpi_type_for_c_type(string type) {
     string mpi_type_name = "MPI";
     vector<string> parts;
@@ -80,7 +88,7 @@ string mpi_type_for_c_type(string type) {
     }
 
     if (user_type_name) {
-        fprintf(stderr, "MPI type not declared: %s\n", type.data());
+        mpi_type_not_declared(type);
         exit(EXIT_FAILURE);
     }
 
@@ -135,7 +143,7 @@ string mpi_type_for_c_type(string type) {
     }
 
     if (mpi_type_name == "MPI") {
-        fprintf(stderr, "Invalid MPI type: %s\n", type.data());
+        mpi_type_not_declared(type);
         exit(EXIT_FAILURE);
     }
 

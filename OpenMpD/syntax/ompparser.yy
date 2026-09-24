@@ -2236,7 +2236,8 @@ cluster_clause_optseq :
 					  | cluster_clause_seq
 					  ;
 
-cluster_data_clause_optseq : cluster_data_clause_seq
+cluster_data_clause_optseq :
+						   | cluster_data_clause_seq
 						   ;
 
 cluster_update_clause_optseq : cluster_update_clause_seq

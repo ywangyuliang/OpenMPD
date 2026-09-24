@@ -57,15 +57,15 @@ void scatter_emit_chunked(std::vector<const char *> scatter_args) {
 
         "\twhile (__offset < " + parts.at(1) + element_multiplier + ") {\n" +
         "\t\tif (__taskid == 0) {\n" +
-        "\t\t\tfor (int __gather = 0; __gather < __numprocs; __gather++) {\n" +
+        "\t\t\tfor (int __scatter = 0; __scatter < __numprocs; __scatter++) {\n" +
         "\t\t\t\tif (__offset < " + parts.at(1) + element_multiplier + ") {\n" +
-        "\t\t\t\t\t__counts[__gather] = " + chunk + ";\n" +
-        "\t\t\t\t\t__displs[__gather] = __offset;\n" +
+        "\t\t\t\t\t__counts[__scatter] = " + chunk + ";\n" +
+        "\t\t\t\t\t__displs[__scatter] = __offset;\n" +
         "\t\t\t\t\t__offset += " + chunk + ";\n" +
         "\t\t\t\t}\n" +
         "\t\t\t\telse {\n" +
-        "\t\t\t\t\t__counts[__gather] = 0;\n" +
-        "\t\t\t\t\t__displs[__gather] = " + parts.at(1) + element_multiplier + ";\n" +
+        "\t\t\t\t\t__counts[__scatter] = 0;\n" +
+        "\t\t\t\t\t__displs[__scatter] = " + parts.at(1) + element_multiplier + ";\n" +
         "\t\t\t\t}\n" +
         "\t\t\t}\n" +
         "\t\t}\n" +
@@ -130,18 +130,18 @@ void scatter_emit_partitioned(std::vector<const char *> scatter_args) {
 
         "\tif (__taskid == 0) {\n" +
         "\t\t__displs[0] = 0;\n\n" +
-        "\t\tfor (int __gather = 1; __gather < __numprocs; __gather++) {\n" +
-        "\t\t\tif (__gather < (" + parts.at(1) + " % __numprocs)) {\n" +
-        "\t\t\t\t__counts[__gather] = (__chunk + 1)" + element_multiplier + ";\n" +
-        "\t\t\t\t__displs[__gather] = __displs[__gather - 1] + (__chunk + 1)" + element_multiplier + ";\n" +
+        "\t\tfor (int __scatter = 1; __scatter < __numprocs; __scatter++) {\n" +
+        "\t\t\tif (__scatter < (" + parts.at(1) + " % __numprocs)) {\n" +
+        "\t\t\t\t__counts[__scatter] = (__chunk + 1)" + element_multiplier + ";\n" +
+        "\t\t\t\t__displs[__scatter] = __displs[__scatter - 1] + (__chunk + 1)" + element_multiplier + ";\n" +
         "\t\t\t}\n" +
-        "\t\t\telse if (__gather == (" + parts.at(1) + " % __numprocs)) {\n" +
-        "\t\t\t\t__counts[__gather] = __chunk" + element_multiplier + ";\n" +
-        "\t\t\t\t__displs[__gather] = __displs[__gather - 1] + (__chunk + 1)" + element_multiplier + ";\n" +
+        "\t\t\telse if (__scatter == (" + parts.at(1) + " % __numprocs)) {\n" +
+        "\t\t\t\t__counts[__scatter] = __chunk" + element_multiplier + ";\n" +
+        "\t\t\t\t__displs[__scatter] = __displs[__scatter - 1] + (__chunk + 1)" + element_multiplier + ";\n" +
         "\t\t\t}\n" +
         "\t\t\telse {\n" +
-        "\t\t\t\t__counts[__gather] = __chunk" + element_multiplier + ";\n" +
-        "\t\t\t\t__displs[__gather] = __displs[__gather - 1] + __chunk" + element_multiplier + ";\n" +
+        "\t\t\t\t__counts[__scatter] = __chunk" + element_multiplier + ";\n" +
+        "\t\t\t\t__displs[__scatter] = __displs[__scatter - 1] + __chunk" + element_multiplier + ";\n" +
         "\t\t\t}\n" +
         "\t\t}\n\n" +
         "\t\tassert((__displs[__numprocs - 1] + __counts[__numprocs - 1]) == " + parts.at(1) + element_multiplier + ");\n" +

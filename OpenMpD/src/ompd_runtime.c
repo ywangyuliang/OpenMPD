@@ -147,8 +147,6 @@ typedef struct {
     int element_index;
     size_t value_size;
     char name[OMPD_MAX_NAME_LEN];
-    int has_initial_value;
-    unsigned char initial_value[OMPD_MAX_VALUE_SIZE];
 } ompd_sched_register_dep_request_t;
 
 typedef struct {
@@ -619,7 +617,7 @@ static void ompd_add_task_dep(ompd_task_record_t *task, ompd_dep_kind_t dep_kind
     if(initial_value != NULL) {
         if(value_size == 0 || value_size > OMPD_MAX_VALUE_SIZE) {
             free(dep);
-            ompd_runtime_abort("invalid initial inout dependency value size");
+            ompd_runtime_abort("invalid initial dependency value size");
         }
         memcpy(dep->initial_value, initial_value, value_size);
         dep->has_initial_value = 1;
@@ -1325,7 +1323,8 @@ static void ompd_scheduler_loop() {
                 
                 break;
             
-            case OMPD_SCHED_REGISTER_DEP:
+            case OMPD_SCHED_REGISTER_DEP: {
+                int needs_initial_value = 0;
                 memset(&register_dep_request, 0, sizeof(register_dep_request));
                 register_dep_request.kind = sched_kind;
 
@@ -1339,6 +1338,28 @@ static void ompd_scheduler_loop() {
 
                 task = ompd_get_task(register_dep_request.task_id);
 
+                if(register_dep_request.dep_kind != OMPD_DEP_KIND_OUTPUT) {
+                    dep_key = ompd_get_or_create_dep_key(
+                        task->parent_task_id,
+                        register_dep_request.name,
+                        register_dep_request.has_index,
+                        register_dep_request.element_index,
+                        register_dep_request.value_size);
+                    needs_initial_value = ompd_deps[dep_key]->last_producer_task_id == 0 &&
+                        (register_dep_request.dep_kind == OMPD_DEP_KIND_INPUT ||
+                         !ompd_deps[dep_key]->has_value);
+
+                    MPI_Send(&needs_initial_value, 1, MPI_INT, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
+                    if(needs_initial_value) {
+                        if(register_dep_request.value_size == 0 ||
+                           register_dep_request.value_size > OMPD_MAX_VALUE_SIZE) {
+                            ompd_runtime_abort("invalid initial dependency value size");
+                        }
+                        MPI_Recv(value_buffer, (int) register_dep_request.value_size, MPI_BYTE,
+                                 status.MPI_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                    }
+                }
+
                 ompd_add_task_dep(
                     task,
                     register_dep_request.dep_kind,
@@ -1346,8 +1367,9 @@ static void ompd_scheduler_loop() {
                     register_dep_request.has_index,
                     register_dep_request.element_index,
                     register_dep_request.value_size,
-                    register_dep_request.has_initial_value ? register_dep_request.initial_value : NULL);
+                    needs_initial_value ? value_buffer : NULL);
                 break;
+            }
             
             case OMPD_SCHED_SUBMIT_TASK:
                 memset(&submit_task_request, 0, sizeof(submit_task_request));
@@ -1426,7 +1448,10 @@ static void ompd_scheduler_loop() {
 
                 break;
 
-            case OMPD_SCHED_RECV_VALUE:
+            case OMPD_SCHED_RECV_VALUE: {
+                ompd_task_dep_t *input_dep = NULL;
+                int input_index;
+                const unsigned char *received_value;
                 memset(&recv_value_request, 0, sizeof(recv_value_request));
                 recv_value_request.kind = sched_kind;
 
@@ -1438,23 +1463,34 @@ static void ompd_scheduler_loop() {
                         MPI_COMM_WORLD,
                         MPI_STATUS_IGNORE);
 
-                dep_key = ompd_scheduler_find_recv_key(recv_value_request.current_task_id, recv_value_request.name);
-
-                if(dep_key < 0 || ompd_deps[dep_key] == NULL || !ompd_deps[dep_key]->has_value) {
-                    ompd_runtime_abort("recv request for unavailable value");
+                task = ompd_get_task(recv_value_request.current_task_id);
+                input_index = ompd_find_task_input_dep_by_name(task, recv_value_request.name);
+                if(input_index >= 0) {
+                    input_dep = task->input_deps[input_index];
                 }
 
-                recv_value_reply.value_size = ompd_deps[dep_key]->stored_value_size;
+                if(input_dep != NULL && input_dep->has_initial_value) {
+                    recv_value_reply.value_size = input_dep->value_size;
+                    received_value = input_dep->initial_value;
+                } else {
+                    dep_key = ompd_scheduler_find_recv_key(recv_value_request.current_task_id, recv_value_request.name);
+                    if(dep_key < 0 || ompd_deps[dep_key] == NULL || !ompd_deps[dep_key]->has_value) {
+                        ompd_runtime_abort("recv request for unavailable value");
+                    }
+                    recv_value_reply.value_size = ompd_deps[dep_key]->stored_value_size;
+                    received_value = ompd_deps[dep_key]->stored_value;
+                }
 
                 MPI_Send(&recv_value_reply, sizeof(recv_value_reply), MPI_BYTE, status.MPI_SOURCE, 0, MPI_COMM_WORLD);
 
-                MPI_Send(ompd_deps[dep_key]->stored_value,
+                MPI_Send((void *) received_value,
                         (int) recv_value_reply.value_size,
                         MPI_BYTE,
                         status.MPI_SOURCE,
                         0,
                         MPI_COMM_WORLD);
                 break;
+            }
 
             case OMPD_SCHED_TASK_DONE:
                 memset(&task_done_request, 0, sizeof(task_done_request));
@@ -1696,6 +1732,7 @@ ompd_task_id_t ompd_build_task(const ompd_task_definition_t *task_definition) {
 
 static void ompd_register_dep_common(ompd_task_id_t task_id, ompd_dep_kind_t dep_kind, const char *name, int has_index, int element_index, size_t value_size, const void *initial_value) {
     ompd_sched_register_dep_request_t register_dep_request;
+    int needs_initial_value;
 
     memset(&register_dep_request, 0, sizeof(register_dep_request));
     register_dep_request.kind = OMPD_SCHED_REGISTER_DEP;
@@ -1706,14 +1743,6 @@ static void ompd_register_dep_common(ompd_task_id_t task_id, ompd_dep_kind_t dep
     register_dep_request.value_size = value_size;
     ompd_copy_name(register_dep_request.name, name);
 
-    if(initial_value != NULL) {
-        if(value_size == 0 || value_size > OMPD_MAX_VALUE_SIZE) {
-            ompd_runtime_abort("invalid initial inout value size");
-        }
-        memcpy(register_dep_request.initial_value, initial_value, value_size);
-        register_dep_request.has_initial_value = 1;
-    }
-
     MPI_Send(&register_dep_request.kind, 1, MPI_INT, OMPD_SCHEDULER_RANK, 0, MPI_COMM_WORLD);
 
     MPI_Send(((unsigned char *) &register_dep_request) + sizeof(int),
@@ -1722,10 +1751,22 @@ static void ompd_register_dep_common(ompd_task_id_t task_id, ompd_dep_kind_t dep
             OMPD_SCHEDULER_RANK,
             0,
             MPI_COMM_WORLD);
+
+    if(dep_kind != OMPD_DEP_KIND_OUTPUT) {
+        MPI_Recv(&needs_initial_value, 1, MPI_INT, OMPD_SCHEDULER_RANK, 0,
+                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        if(needs_initial_value) {
+            if(initial_value == NULL || value_size == 0 || value_size > OMPD_MAX_VALUE_SIZE) {
+                ompd_runtime_abort("missing or invalid initial dependency value");
+            }
+            MPI_Send((void *) initial_value, (int) value_size, MPI_BYTE,
+                     OMPD_SCHEDULER_RANK, 0, MPI_COMM_WORLD);
+        }
+    }
 }
 
-void ompd_register_task_input_variable(ompd_task_id_t task_id, const char *name, size_t value_size) {
-    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INPUT, name, 0, 0, value_size, NULL);
+void ompd_register_task_input_variable(ompd_task_id_t task_id, const char *name, size_t value_size, const void *initial_value) {
+    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INPUT, name, 0, 0, value_size, initial_value);
 }
 
 void ompd_register_task_output_variable(ompd_task_id_t task_id, const char *name, size_t value_size) {
@@ -1736,8 +1777,8 @@ void ompd_register_task_inout_variable(ompd_task_id_t task_id, const char *name,
     ompd_register_dep_common(task_id, OMPD_DEP_KIND_INOUT, name, 0, 0, value_size, initial_value);
 }
 
-void ompd_register_task_input_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size) {
-    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INPUT, name, 1, element_index, element_size, NULL);
+void ompd_register_task_input_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size, const void *initial_value) {
+    ompd_register_dep_common(task_id, OMPD_DEP_KIND_INPUT, name, 1, element_index, element_size, initial_value);
 }
 
 void ompd_register_task_output_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size) {

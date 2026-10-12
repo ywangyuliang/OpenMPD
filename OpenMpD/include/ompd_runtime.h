@@ -37,7 +37,7 @@ void ompd_check_region_num_teams(int num_teams);
 ompd_task_id_t ompd_build_task(const ompd_task_definition_t *task_definition);
 
 /* Registers a scalar input dependency for a task */
-void ompd_register_task_input_variable(ompd_task_id_t task_id, const char *name, size_t value_size);
+void ompd_register_task_input_variable(ompd_task_id_t task_id, const char *name, size_t value_size, const void *initial_value);
 
 /* Registers a scalar output dependency for a task */
 void ompd_register_task_output_variable(ompd_task_id_t task_id, const char *name, size_t value_size);
@@ -46,7 +46,7 @@ void ompd_register_task_output_variable(ompd_task_id_t task_id, const char *name
 void ompd_register_task_inout_variable(ompd_task_id_t task_id, const char *name, size_t value_size, const void *initial_value);
 
 /* Registers one array-element input dependency for a task */
-void ompd_register_task_input_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size);
+void ompd_register_task_input_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size, const void *initial_value);
 
 /* Registers one array-element output dependency for a task */
 void ompd_register_task_output_array_element(ompd_task_id_t task_id, const char *name, int element_index, size_t element_size);

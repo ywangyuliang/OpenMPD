@@ -1,0 +1,39 @@
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 6.193075 seconds
+OMPD_CALC_TIME_SECONDS=6.193074942
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 6.145814 seconds
+OMPD_CALC_TIME_SECONDS=6.145813942
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 6.173554 seconds
+OMPD_CALC_TIME_SECONDS=6.173553944
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 6.176206 seconds
+OMPD_CALC_TIME_SECONDS=6.176205873
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 6.172139 seconds
+OMPD_CALC_TIME_SECONDS=6.172138929
+
+ Performance counter stats for '../sequential.out 35 17 20' (5 runs):
+
+          6,170.33 msec task-clock                #    1.000 CPUs utilized            ( +-  0.13% )
+               560      context-switches          #   90.777 /sec                     ( +-  2.74% )
+                 5      cpu-migrations            #    0.811 /sec                     ( +- 16.25% )
+                65      page-faults               #   10.537 /sec                     ( +-  0.62% )
+    19,557,029,838      cycles                    #    3.170 GHz                      ( +-  0.03% )
+    67,052,069,907      instructions              #    3.43  insn per cycle           ( +-  0.00% )
+    22,699,473,297      branches                  #    3.680 G/sec                    ( +-  0.00% )
+        59,982,590      branch-misses             #    0.26% of all branches          ( +-  0.33% )
+
+           6.17336 +- 0.00769 seconds time elapsed  ( +-  0.12% )
+

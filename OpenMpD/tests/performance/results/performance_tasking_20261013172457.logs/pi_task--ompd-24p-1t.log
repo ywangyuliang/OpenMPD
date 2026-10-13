@@ -1,0 +1,44 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 3.043482 seconds
+OMPD_CALC_TIME_SECONDS=3.043481827
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 1.717922 seconds
+OMPD_CALC_TIME_SECONDS=1.717921972
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 3.042962 seconds
+OMPD_CALC_TIME_SECONDS=3.042962074
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 3.050057 seconds
+OMPD_CALC_TIME_SECONDS=3.050056934
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 3.045369 seconds
+OMPD_CALC_TIME_SECONDS=3.045369148
+
+ Performance counter stats for 'mpirun --use-hwthread-cpus --map-by hwthread --bind-to hwthread -np 24 ../ompd.out 1000000000' (5 runs):
+
+         66,449.14 msec task-clock                #   21.380 CPUs utilized            ( +-  9.57% )
+            56,768      context-switches          #  944.371 /sec                     ( +-  1.52% )
+               197      cpu-migrations            #    3.277 /sec                     ( +-  1.98% )
+            63,540      page-faults               #    1.057 K/sec                    ( +-  0.12% )
+   171,483,193,747      cycles                    #    2.853 GHz                      ( +-  9.63% )
+   236,721,068,592      instructions              #    1.53  insn per cycle           ( +-  9.23% )
+    46,971,847,254      branches                  #  781.406 M/sec                    ( +-  9.52% )
+       342,851,228      branch-misses             #    0.82% of all branches          ( +-  9.89% )
+
+             3.108 +- 0.263 seconds time elapsed  ( +-  8.45% )
+

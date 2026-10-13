@@ -1,0 +1,6 @@
+binomial(35, 17) = 4537567650
+threshold = 20
+expected = 4537567650
+correct = yes
+time: 3.686579 seconds
+OMPD_CALC_TIME_SECONDS=3.686578989

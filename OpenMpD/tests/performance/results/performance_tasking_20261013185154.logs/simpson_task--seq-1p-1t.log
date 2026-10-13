@@ -1,0 +1,54 @@
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000049 seconds
+OMPD_CALC_TIME_SECONDS=0.000049114
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000048 seconds
+OMPD_CALC_TIME_SECONDS=0.000048161
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000039 seconds
+OMPD_CALC_TIME_SECONDS=0.000038862
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000036 seconds
+OMPD_CALC_TIME_SECONDS=0.000036001
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000025 seconds
+OMPD_CALC_TIME_SECONDS=0.000025034
+
+ Performance counter stats for '../sequential.out 1e-8 20 10' (5 runs):
+
+              0.87 msec task-clock                #    0.531 CPUs utilized            ( +-  9.47% )
+                 1      context-switches          #    1.066 K/sec                    ( +- 20.00% )
+                 1      cpu-migrations            #    1.066 K/sec                    ( +- 20.00% )
+                79      page-faults               #   84.215 K/sec                    ( +-  0.40% )
+         1,232,308      cycles                    #    1.314 GHz                      ( +-  6.41% )
+           855,302      instructions              #    0.71  insn per cycle           ( +- 10.75% )
+           167,570      branches                  #  178.631 M/sec                    ( +- 16.22% )
+             6,119      branch-misses             #    3.05% of all branches          ( +-  6.77% )
+
+          0.001632 +- 0.000113 seconds time elapsed  ( +-  6.92% )
+

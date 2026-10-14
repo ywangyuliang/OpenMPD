@@ -1,0 +1,49 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 1.357243 seconds
+OMPD_CALC_TIME_SECONDS=1.357243061
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 1.388476 seconds
+OMPD_CALC_TIME_SECONDS=1.388476014
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 1.370963 seconds
+OMPD_CALC_TIME_SECONDS=1.370962977
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 1.310036 seconds
+OMPD_CALC_TIME_SECONDS=1.310035944
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+binomial(35, 17) = 4537567650
+expected = 4537567650
+correct = yes
+time: 1.297015 seconds
+OMPD_CALC_TIME_SECONDS=1.297014952
+
+ Performance counter stats for 'mpirun --map-by core --bind-to core -np 12 ../ompd.out 35 17 20' (5 runs):
+
+         15,900.50 msec task-clock                #    7.657 CPUs utilized            ( +-  0.35% )
+            32,560      context-switches          #    2.029 K/sec                    ( +-  4.73% )
+               419      cpu-migrations            #   26.107 /sec                     ( +-  1.50% )
+           112,177      page-faults               #    6.990 K/sec                    ( +-  0.33% )
+    39,497,075,967      cycles                    #    2.461 GHz                      ( +-  0.20% )
+   122,326,072,645      instructions              #    3.09  insn per cycle           ( +-  0.14% )
+    30,025,204,979      branches                  #    1.871 G/sec                    ( +-  0.11% )
+       103,466,094      branch-misses             #    0.34% of all branches          ( +-  0.17% )
+
+            2.0766 +- 0.0169 seconds time elapsed  ( +-  0.81% )
+

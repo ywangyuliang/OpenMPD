@@ -2,7 +2,12 @@
 
 void cadena(int n)
 {
-    if (n <= 0) return;  // Caso base
+    if (n <= 0) {
+        return;
+    }
+
+    printf("Creando tarea: cadena(%d)\n", n - 1);
+    fflush(stdout);
 
     #pragma omp cluster
     {

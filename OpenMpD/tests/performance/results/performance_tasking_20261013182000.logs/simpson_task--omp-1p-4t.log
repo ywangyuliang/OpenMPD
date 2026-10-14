@@ -1,0 +1,59 @@
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000527 seconds
+OMPD_CALC_TIME_SECONDS=0.000526905
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000485 seconds
+OMPD_CALC_TIME_SECONDS=0.000484943
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000479 seconds
+OMPD_CALC_TIME_SECONDS=0.000478983
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000432 seconds
+OMPD_CALC_TIME_SECONDS=0.000431776
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000466 seconds
+OMPD_CALC_TIME_SECONDS=0.000465870
+
+ Performance counter stats for '../openmp.out 1e-8 20 10' (5 runs):
+
+              2.76 msec task-clock                #    1.257 CPUs utilized            ( +-  4.04% )
+                 4      context-switches          #    1.530 K/sec                    ( +- 12.25% )
+                 1      cpu-migrations            #  382.424 /sec                     ( +- 20.00% )
+               101      page-faults               #   38.625 K/sec                    ( +-  0.66% )
+         3,471,845      cycles                    #    1.328 GHz                      ( +-  1.49% )
+         2,002,269      instructions              #    0.61  insn per cycle           ( +-  1.03% )
+           447,717      branches                  #  171.218 M/sec                    ( +-  1.23% )
+            12,214      branch-misses             #    2.80% of all branches          ( +-  2.60% )
+
+          0.002192 +- 0.000102 seconds time elapsed  ( +-  4.67% )
+

@@ -1,0 +1,39 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 3.748035 seconds
+OMPD_CALC_TIME_SECONDS=3.748034954
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 3.760572 seconds
+OMPD_CALC_TIME_SECONDS=3.760571957
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 3.749065 seconds
+OMPD_CALC_TIME_SECONDS=3.749064922
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 3.778802 seconds
+OMPD_CALC_TIME_SECONDS=3.778801918
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 3.890552 seconds
+OMPD_CALC_TIME_SECONDS=3.890552044
+
+ Performance counter stats for 'mpirun --use-hwthread-cpus --map-by hwthread --bind-to hwthread -np 24 ../ompd.out 50 30' (5 runs):
+
+         95,033.53 msec task-clock                #   21.043 CPUs utilized            ( +-  0.67% )
+            67,580      context-switches          #  730.110 /sec                     ( +-  0.63% )
+               200      cpu-migrations            #    2.161 /sec                     ( +-  1.49% )
+           115,267      page-faults               #    1.245 K/sec                    ( +-  0.14% )
+   245,517,066,126      cycles                    #    2.652 GHz                      ( +-  0.67% )
+   393,693,495,513      instructions              #    1.65  insn per cycle           ( +-  0.56% )
+    60,756,436,996      branches                  #  656.391 M/sec                    ( +-  0.79% )
+       258,509,526      branch-misses             #    0.44% of all branches          ( +-  1.32% )
+
+            4.5161 +- 0.0265 seconds time elapsed  ( +-  0.59% )
+

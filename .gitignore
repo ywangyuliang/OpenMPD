@@ -46,6 +46,7 @@ OpenMpD/error.txt
 OpenMpD/sym_tables.txt
 OpenMpD/game_of_life_output_version_out.txt
 OpenMpD/heated_plate_*_result*.txt
+OpenMpD/*.log
 examples/**/log.txt
 examples/**/error.txt
 examples/**/sym_tables.txt

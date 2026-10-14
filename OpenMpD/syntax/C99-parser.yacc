@@ -40,6 +40,51 @@ extern void tasking_parse_finish_body(void);
 static int task_body_statement_depth = 0;
 static const char *TASK_GLOBAL_DEFINITIONS_SLOT = "task_global_definitions";
 static int task_global_definitions_slot_reserved = 0;
+static std::set<std::string> main_pass_function_definitions;
+
+/* Reuse functions registered by the preprocessor pass. */
+static bool ompd_register_main_pass_function(symbol_info *function){
+    const std::string &name = function->get_symbol_name();
+    symbol_info *existing;
+
+    if(!main_pass_function_definitions.insert(name).second){
+        logFile << "Error: " << name << " already exists in scope " << endl;
+        errFile << "Error: " << name << " already exists in scope " << endl;
+        error_count++;
+        return false;
+    }
+
+    existing = table.get_symbol_info(name);
+    if(existing != NULL && existing->is_function()){
+        existing->set_is_pointer(function->is_pointer());
+        existing->set_variable_type(function->get_variable_type());
+        logFile << "Reused Function from preprocessor: " << name
+                << " in scope " << table.current_scope_id() << endl;
+        return true;
+    }
+
+    if(existing == NULL && table.insert(function)){
+        logFile << "Inserted Function: " << name
+                << " in scope " << table.current_scope_id() << endl;
+        return true;
+    }
+
+    logFile << "Error: " << name << " already exists in scope " << endl;
+    errFile << "Error: " << name << " already exists in scope " << endl;
+    error_count++;
+    return false;
+}
+
+/* Mark the shared function symbol as defined. */
+static void ompd_mark_main_pass_function_defined(symbol_info *function){
+    symbol_info *registered;
+
+    function->set_is_defined(true);
+    registered = table.get_symbol_info(function->get_symbol_name());
+    if(registered != NULL){
+        registered->set_is_defined(true);
+    }
+}
 
 /* Wraps a task body expression in a parser symbol */
 static symbol_info *task_make_expr_symbol(task_body_expr_t *expr, const std::string &value_type){
@@ -1476,16 +1521,8 @@ function_definition
 		$2->set_is_function(true);
 		$2->set_variable_type($1->get_symbol_type());
 		ompd_emit_forward_decl($2);
-		if (table.insert($2)) {
-			logFile << "Inserted Function: " << $2->get_symbol_name() << " in scope " << table.current_scope_id() << endl;
-			if($2->get_symbol_name() == "main"){
-				main_init = 1;
-			}
-		}
-		else {
-			logFile << "Error: " << $2->get_symbol_name() << " already exists in scope " << endl;
-			errFile << "Error: " << $2->get_symbol_name() << " already exists in scope " << endl;
-			error_count++;
+		if(ompd_register_main_pass_function($2) && $2->get_symbol_name() == "main"){
+			main_init = 1;
 		}
 		table.enter_scope();
 	} declaration_list {
@@ -1502,7 +1539,7 @@ function_definition
 		declaration_handling_enabled = 0;
 		sequential_region_active = 0;
 	} compound_statement {
-		$2->set_is_defined(true);
+		ompd_mark_main_pass_function_defined($2);
 		table.exit_scope();
 		if($2->get_symbol_name() == "main"){
 			main_scope_depth = 0;
@@ -1515,16 +1552,8 @@ function_definition
 		$2->set_is_function(true);
 		$2->set_variable_type($1->get_symbol_type());
 		ompd_emit_forward_decl($2);
-		if (table.insert($2)) {
-			logFile << "Inserted Function: " << $2->get_symbol_name() << " in scope " << table.current_scope_id() << endl;
-			if($2->get_symbol_name() == "main"){
-				main_init = 1;
-			}
-		}
-		else {
-			logFile << "Error: " << $2->get_symbol_name() << " already exists in scope " << endl;
-			errFile << "Error: " << $2->get_symbol_name() << " already exists in scope " << endl;
-			error_count++;
+		if(ompd_register_main_pass_function($2) && $2->get_symbol_name() == "main"){
+			main_init = 1;
 		}
 		table.enter_scope();
 		if ($2->get_parameter_list() != nullptr) {
@@ -1551,7 +1580,7 @@ function_definition
 		declaration_handling_enabled = 0;
 		sequential_region_active = 0;
 	} compound_statement {
-		$2->set_is_defined(true);
+		ompd_mark_main_pass_function_defined($2);
 		table.exit_scope();
 		if($2->get_symbol_name() == "main"){
 			main_scope_depth = 0;

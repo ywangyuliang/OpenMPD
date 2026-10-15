@@ -13,11 +13,13 @@ temp/
 a.out
 out
 out_*
+!out_*.c
 *_out
 *_omp
 *_ompd
 *_seq
 OpenMpD/fparse
+__pycache__
 
 # Flex and Bison generated files
 OpenMpD/y.*

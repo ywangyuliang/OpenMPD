@@ -1,0 +1,54 @@
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000043 seconds
+OMPD_CALC_TIME_SECONDS=0.000043154
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000041 seconds
+OMPD_CALC_TIME_SECONDS=0.000041008
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000031 seconds
+OMPD_CALC_TIME_SECONDS=0.000030994
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000047 seconds
+OMPD_CALC_TIME_SECONDS=0.000046968
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.000031 seconds
+OMPD_CALC_TIME_SECONDS=0.000030994
+
+ Performance counter stats for '../sequential.out 1e-8 20 10' (5 runs):
+
+              0.74 msec task-clock                #    0.476 CPUs utilized            ( +- 12.73% )
+                 0      context-switches          #    0.000 /sec                   
+                 0      cpu-migrations            #    0.000 /sec                   
+                80      page-faults               #   89.959 K/sec                    ( +-  0.47% )
+         1,171,268      cycles                    #    1.317 GHz                      ( +-  5.66% )
+           948,661      instructions              #    0.81  insn per cycle           ( +-  8.80% )
+           195,612      branches                  #  219.964 M/sec                    ( +- 12.56% )
+             6,960      branch-misses             #    3.36% of all branches          ( +-  6.40% )
+
+          0.001547 +- 0.000133 seconds time elapsed  ( +-  8.58% )
+

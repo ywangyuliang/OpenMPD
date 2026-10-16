@@ -1,7 +1,3 @@
-#ifndef _POSIX_C_SOURCE
-#define _POSIX_C_SOURCE 200809L
-#endif
-
 #include "ompd_runtime.h"
 #include "hash_map.h"
 
@@ -9,8 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <errno.h>
-#include <time.h>
 #include <mpi.h>
 
 #define OMPD_MAX_TASKS 524288
@@ -1597,16 +1591,6 @@ static void ompd_scheduler_loop() {
     }
 }
 
-static void ompd_idle_sleep(void) {
-    struct timespec remaining = {0, 50000L};
-
-    while(nanosleep(&remaining, &remaining) != 0) {
-        if(errno != EINTR) {
-            ompd_runtime_abort("idle sleep failed");
-        }
-    }
-}
-
 static void ompd_worker_loop() {
 
     ompd_sched_work_request_t work_request;
@@ -1632,7 +1616,6 @@ static void ompd_worker_loop() {
         }
 
         if(work_reply.kind == OMPD_WORK_IDLE) {
-            ompd_idle_sleep();
             continue;
         }
 
@@ -1844,6 +1827,7 @@ void ompd_wait_for_child_tasks() {
 
     while(1){
         ompd_poll_wait_replies();
+
         if(ompd_consume_wait_completed(waiting_task_id)) {
             return;
         }
@@ -1868,11 +1852,6 @@ void ompd_wait_for_child_tasks() {
                 MPI_STATUS_IGNORE);
 
         if(work_reply.kind == OMPD_WORK_IDLE) {
-            ompd_poll_wait_replies();
-            if(ompd_consume_wait_completed(waiting_task_id)) {
-                return;
-            }
-            ompd_idle_sleep();
             continue;
         }
 

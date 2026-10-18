@@ -104,6 +104,7 @@ int main ( int argc, char *argv[] )
       printf("scanf error en dt\n");
   }
 /* Report */
+  if(myid == 0){
     printf ( "\n" );
     printf ( "  ND, the spatial dimension, is %d\n", nd );
     printf ( "  NP, the number of particles in the simulation, is %d\n", np );
@@ -143,7 +144,7 @@ int main ( int argc, char *argv[] )
   cantidad = np/numprocs;
   offset = myid * np/numprocs;
 
-  double start_time = 0.0;
+  double start_time = MPI_Wtime();
 
   for ( step = 0; step <= step_num; step++ )
   {
@@ -181,8 +182,11 @@ int main ( int argc, char *argv[] )
     }
   }
 
-  double run_time = 0.0;
-  if(myid == 0) printf("\n Tiempo =  %f segundos\n",run_time);
+  double run_time = MPI_Wtime() - start_time;
+  if(myid == 0){
+    printf("\n Tiempo =  %f segundos\n",run_time);
+    printf("OMPD_CALC_TIME_SECONDS=%.9f\n", run_time);
+  }
   free ( acc );
   free ( force );
   free ( pos );

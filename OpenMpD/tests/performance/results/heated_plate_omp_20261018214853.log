@@ -1,0 +1,59 @@
+
+HEATED_PLATE <epsilon> <fichero-salida>
+  C/serie version
+  A program to solve for the steady state temperature distribution
+  over a rectangular plate.
+
+  Spatial grid of 500 by 500 points.
+The iteration will be repeated until the change is <= 0.001000
+  The steady state solution will be written to /tmp/plate_omp.txt
+
+  MEAN = 74.949900
+
+ Iteration  Change
+
+         1  18.7375
+         2  9.36874
+         4  4.09882
+         8  2.28958
+        16  1.1366
+        32  0.568201
+        64  0.282805
+       128  0.141777
+       256  0.070808
+       512  0.035427
+      1024  0.0177074
+      2048  0.00885567
+      4096  0.0044276
+      8192  0.00221017
+     16384  0.00104281
+
+     16955  0.00099998
+
+  Error tolerance achieved.
+
+ Tiempo version Secuencial = 2.43619 s
+OMPD_CALC_TIME_SECONDS=2.436189090
+
+ Solucion escrita en el fichero /tmp/plate_omp.txt
+
+HEATED_PLATE_Serie:
+  Normal end of execution.
+
+ Performance counter stats for './heated_plate_omp_out 0.001 /tmp/plate_omp.txt':
+
+          9,849.63 msec task-clock                #    3.862 CPUs utilized          
+               889      context-switches          #   90.257 /sec                   
+                 1      cpu-migrations            #    0.102 /sec                   
+             2,051      page-faults               #  208.231 /sec                   
+    30,504,451,168      cycles                    #    3.097 GHz                    
+    64,393,130,927      instructions              #    2.11  insn per cycle         
+     4,506,355,624      branches                  #  457.515 M/sec                  
+         9,619,091      branch-misses             #    0.21% of all branches        
+
+       2.550170972 seconds time elapsed
+
+       9.717936000 seconds user
+       0.135971000 seconds sys
+
+

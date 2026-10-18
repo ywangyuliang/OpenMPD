@@ -1,0 +1,28 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Process# 1 with name albaricoque on 4 processors
+Process# 3 with name albaricoque on 4 processors
+Process# 2 with name albaricoque on 4 processors
+Number of intervals: 0 (0 quits)
+Process# 0 with name albaricoque on 4 processors
+pi is approximately 3.1415926535897709, Relative Error is  -7.06789929e-13
+wall clock time = 2.548056
+Number of intervals: 2147483646 (0 quits)
+
+ Performance counter stats for 'mpirun -np 4 ./pi_mpi_out':
+
+         10,564.27 msec task-clock                #    3.419 CPUs utilized          
+             5,866      context-switches          #  555.268 /sec                   
+                96      cpu-migrations            #    9.087 /sec                   
+            14,296      page-faults               #    1.353 K/sec                  
+    31,768,709,379      cycles                    #    3.007 GHz                    
+    31,579,398,309      instructions              #    0.99  insn per cycle         
+     2,956,154,388      branches                  #  279.826 M/sec                  
+         3,216,748      branch-misses             #    0.11% of all branches        
+
+       3.089785544 seconds time elapsed
+
+      10.372368000 seconds user
+       0.235101000 seconds sys
+
+

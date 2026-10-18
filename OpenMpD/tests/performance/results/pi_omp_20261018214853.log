@@ -1,0 +1,22 @@
+2147483646 num_steps, 0.00000000046566128774142 step size i: 4 size num_steps: 4
+Pi 3.14159265358979533644401, calc con 2147483646 pasos en 1.297159 segundos
+OMPD_CALC_TIME_SECONDS=1.297158957
+Pi es 3.14159265358979311599796, Error relativo 7.06789929e-14
+
+ Performance counter stats for './pi_omp_out 2':
+
+          5,047.14 msec task-clock                #    3.886 CPUs utilized          
+               472      context-switches          #   93.518 /sec                   
+                 5      cpu-migrations            #    0.991 /sec                   
+                96      page-faults               #   19.021 /sec                   
+    15,072,974,434      cycles                    #    2.986 GHz                    
+    16,122,215,156      instructions              #    1.07  insn per cycle         
+       540,687,389      branches                  #  107.128 M/sec                  
+            52,546      branch-misses             #    0.01% of all branches        
+
+       1.298850159 seconds time elapsed
+
+       5.050112000 seconds user
+       0.000000000 seconds sys
+
+

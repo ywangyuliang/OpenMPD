@@ -1,0 +1,47 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+         1  18.7375
+         2  9.36874
+         4  4.09882
+         8  2.28958
+        16  1.1366
+        32  0.568201
+        64  0.282805
+       128  0.141777
+       256  0.070808
+       512  0.035427
+      1024  0.0177074
+      2048  0.00885567
+      4096  0.0044276
+      8192  0.00221017
+     16384  0.00104281
+
+     16955  0.00099998
+
+  Error tolerance achieved.
+
+ Tiempo version Secuencial = 2.71226 s
+OMPD_CALC_TIME_SECONDS=2.712257000
+
+ Solucion escrita en el fichero /tmp/plate_mpi.txt
+
+HEATED_PLATE_Serie:
+  Normal end of execution.
+
+ Performance counter stats for 'mpirun -np 4 ./heated_plate_mpi_out 0.001 /tmp/plate_mpi.txt':
+
+         11,387.49 msec task-clock                #    3.355 CPUs utilized          
+             8,073      context-switches          #  708.936 /sec                   
+                93      cpu-migrations            #    8.167 /sec                   
+            41,658      page-faults               #    3.658 K/sec                  
+    34,717,676,451      cycles                    #    3.049 GHz                    
+    82,153,673,926      instructions              #    2.37  insn per cycle         
+     9,658,945,057      branches                  #  848.207 M/sec                  
+        25,297,031      branch-misses             #    0.26% of all branches        
+
+       3.393892973 seconds time elapsed
+
+      11.057144000 seconds user
+       0.385165000 seconds sys
+
+

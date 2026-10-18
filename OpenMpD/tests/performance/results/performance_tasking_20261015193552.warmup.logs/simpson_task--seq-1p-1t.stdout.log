@@ -1,8 +1,0 @@
-Simpson integral of sin(x) in [0, pi]
-eps = 1.000000000000e-08
-depth = 20
-result = 1.999999999997953
-expected = 2.000000000000000
-error = 2.047251257409e-12
-time: 0.000053 seconds
-OMPD_CALC_TIME_SECONDS=0.000053167

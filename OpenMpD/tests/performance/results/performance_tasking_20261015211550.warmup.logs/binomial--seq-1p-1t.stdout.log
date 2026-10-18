@@ -1,5 +1,0 @@
-binomial(35, 17) = 4537567650
-expected = 4537567650
-correct = yes
-time: 6.148222 seconds
-OMPD_CALC_TIME_SECONDS=6.148221970

@@ -1,0 +1,61 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+18 October 2026 10:21:29 PM
+18 October 2026 10:21:29 PM
+18 October 2026 10:21:29 PM
+
+MD
+  C version
+  A molecular dynamics program.
+
+  ND, the spatial dimension, is 3
+  NP, the number of particles in the simulation, is 1000
+  STEP_NUM, the number of time steps, is 1000
+  DT, the size of each time step, is 0.010000
+
+  At each step, we report the potential and kinetic energies.
+  The sum of these energies should be a constant.
+  As an accuracy check, we also print the relative error
+  in the total energy.
+
+      Step      Potential       Kinetic        (P+K-E0)/E0
+                Energy P        Energy K       Relative Energy Error
+
+18 October 2026 10:21:29 PM
+         0   498159.395148        0.000000    0.000000e+00
+       100   495086.242153     3291.452820    4.382128e-04
+       200   494348.148158     5350.897367    3.090678e-03
+       300   495047.059607     5985.856861    5.768277e-03
+       400   496323.930869     5972.126554    8.303893e-03
+       500   497289.693104     5503.029380    9.300893e-03
+       600   498218.172089     4832.326714    9.818351e-03
+       700   498622.598776     4564.399151    1.009236e-02
+       800   499014.483732     4258.967014    1.026590e-02
+       900   499227.921898     4078.313423    1.033171e-02
+      1000   499328.994032     3987.177218    1.035166e-02
+
+ Tiempo =  6.789895 segundos
+OMPD_CALC_TIME_SECONDS=6.789895497
+
+MD
+  Normal end of execution.
+
+18 October 2026 10:21:36 PM
+
+ Performance counter stats for 'mpirun -np 4 ./md_mpi_out 3 1000 1000 0.01':
+
+         27,525.36 msec task-clock                #    3.751 CPUs utilized          
+             7,432      context-switches          #  270.006 /sec                   
+                92      cpu-migrations            #    3.342 /sec                   
+            15,026      page-faults               #  545.897 /sec                   
+    85,765,032,047      cycles                    #    3.116 GHz                    
+   180,737,909,013      instructions              #    2.11  insn per cycle         
+    26,966,416,735      branches                  #  979.693 M/sec                  
+        38,402,688      branch-misses             #    0.14% of all branches        
+
+       7.337297380 seconds time elapsed
+
+      27.256915000 seconds user
+       0.310771000 seconds sys
+
+

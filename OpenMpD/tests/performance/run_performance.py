@@ -23,12 +23,14 @@ REPEATS = 5
 TIMEOUT = 300
 OPTIMIZATION = "-O2"
 PHYSICAL_CORES = 12
+HARDWARE_THREADS = 24
 SOCKETS = 2
 VARIANT_ORDER = ("seq", "omp", "mpi", "mpi_omp", "ompd", "ompd_omp")
 MPI_REFERENCE_VARIANTS = frozenset(("mpi", "mpi_omp"))
 HYBRID_VARIANTS = frozenset(("mpi_omp", "ompd_omp"))
 PROCESS_COUNTS = (2, 4, 8, 12, 24)
 THREAD_COUNTS = (2, 4, 8, 12, 24)
+TASK_PROCESS_COUNTS = tuple(count + 1 for count in THREAD_COUNTS)
 # The hybrid campaign includes physical-core points at 4, 8 and 12 resources,
 # plus the existing 24-resource configurations. Intermediate 16-resource
 # points are intentionally omitted.
@@ -56,6 +58,7 @@ CSV_FIELDS = (
     "comparison_group",
     "variant",
     "processes",
+    "application_processes",
     "threads",
     "total_resources",
     "repetitions",
@@ -367,6 +370,10 @@ class Runner:
             value for value in THREAD_COUNTS
             if not requested_threads or value in requested_threads
         )
+        ompd_processes = tuple(
+            value for value in (TASK_PROCESS_COUNTS if case.uses_runtime else PROCESS_COUNTS)
+            if not requested_processes or value in requested_processes
+        )
         hybrid = tuple(
             (process_count, thread_count)
             for process_count, thread_count in HYBRID_POINTS
@@ -380,7 +387,7 @@ class Runner:
             "omp": tuple((1, thread_count) for thread_count in threads),
             "mpi": tuple((process_count, 1) for process_count in processes),
             "mpi_omp": hybrid,
-            "ompd": tuple((process_count, 1) for process_count in processes),
+            "ompd": tuple((process_count, 1) for process_count in ompd_processes),
             "ompd_omp": hybrid,
         }
         configs = []
@@ -423,6 +430,12 @@ class Runner:
                     "--map-by", "hwthread",
                     "--bind-to", "hwthread",
                 ]
+                if case.uses_runtime and variant == "ompd" and processes > HARDWARE_THREADS:
+                    mpi_options = [
+                        "--use-hwthread-cpus", "--oversubscribe",
+                        "--map-by", "hwthread",
+                        "--bind-to", "hwthread:overload-allowed",
+                    ]
             if getattr(self.args, "report_bindings", False):
                 mpi_options.append("--report-bindings")
             command = ["mpirun", *mpi_options, "-np", str(processes), *command]
@@ -484,6 +497,7 @@ class Runner:
             ),
             "variant": variant,
             "processes": processes,
+            "application_processes": processes - int(case.uses_runtime and variant in ("ompd", "ompd_omp")),
             "threads": threads,
             "total_resources": processes * threads,
             "repetitions": REPEATS,
@@ -538,7 +552,10 @@ def parse_args():
     parser.add_argument("--cases", type=Path, default=Path("tests/performance/cases.tsv"))
     parser.add_argument("--case", action="append", dest="case_names")
     parser.add_argument("--family", choices=("base", "tasking", "halo"))
-    parser.add_argument("--processes", type=positive_list)
+    parser.add_argument(
+        "--processes", type=positive_list,
+        help="filter total MPI process counts, including the tasking scheduler (3,5,9,13,25)",
+    )
     parser.add_argument("--threads", type=positive_list)
     parser.add_argument("--max-resources", type=int)
     parser.add_argument(
@@ -596,7 +613,10 @@ def select_cases(cases, args):
         invalid = [
             case.name
             for case in cases
-            if not set(args.processes).intersection(PROCESS_COUNTS)
+            if not any(
+                variant in ("mpi", "mpi_omp", "ompd", "ompd_omp")
+                for variant, _, _ in Runner(args, [case], None, None, None).configurations(case)
+            )
         ]
         if invalid:
             raise ValueError("requested process counts are not valid for: " + ", ".join(invalid))
@@ -634,6 +654,8 @@ def print_plan(args, cases):
     mpi_total = 0
     hybrid_total = 0
     print("Performance configuration plan")
+    if any(case.uses_runtime for case in cases):
+        print("Tasking OpenMPD process counts include one scheduler in addition to the application processes.")
     for case in cases:
         configurations = runner.configurations(case)
         core = sum(

@@ -464,13 +464,19 @@ The script also accepts `CASES_FILE` and `CASE_TIMEOUT` as environment variables
 
 ## Performance tests
 
-The performance tests use the same process and thread counts for every benchmark:
+The performance tests use the following process and thread counts:
 
-- `run_performance.py` defines 2, 4, 8, 12 and 24 as the single process/thread scale.
+- `run_performance.py` uses 2, 4, 8, 12 and 24 OpenMP threads. OpenMPD tasking uses 3, 5, 9, 13 and 25 MPI processes, including one scheduler. Other OpenMPD cases and MPI references use 2, 4, 8, 12 and 24 processes.
 - `tests/performance/cases.tsv` lists the available variants for each benchmark. Individual cases cannot define a different scale.
 - Fixed-topology examples such as `pipeline` (5 teams) and `inventory_inout` (4 teams) remain in the regression tests and are not part of the performance tests.
 
-Each benchmark therefore has eleven core measurements: one sequential run, five OpenMP runs with 2, 4, 8, 12 and 24 threads, and five OpenMPD runs with the same number of MPI processes. Use `--include-ompd-openmp` to include the available OpenMPD+OpenMP configurations.
+Each benchmark has eleven core measurements: one sequential run, five OpenMP runs and five OpenMPD runs. Use `--include-ompd-openmp` to include the available OpenMPD+OpenMP configurations.
+
+Run only Fibonacci from `OpenMpD`:
+
+```sh
+python3 tests/performance/run_performance.py --family tasking --case fibonacci
+```
 
 Preview the complete plan without compiling or running anything:
 
@@ -985,13 +991,19 @@ El script también acepta `CASES_FILE`, `WORK_ROOT` y `CASE_TIMEOUT` como variab
 
 ## Pruebas de rendimiento
 
-Las pruebas de rendimiento usan los mismos números de procesos e hilos para todos los ejemplos:
+Las pruebas de rendimiento usan los siguientes números de procesos e hilos:
 
-- `run_performance.py` fija 2, 4, 8, 12 y 24 como única escala de procesos e hilos.
+- `run_performance.py` usa 2, 4, 8, 12 y 24 hilos OpenMP. OpenMPD con tasking usa 3, 5, 9, 13 y 25 procesos MPI, incluyendo un scheduler. Los demás casos OpenMPD y las referencias MPI usan 2, 4, 8, 12 y 24 procesos.
 - `tests/performance/cases.tsv` enumera las variantes disponibles para cada ejemplo. Ningún caso puede definir una escala distinta.
 - Los ejemplos de topología fija, como `pipeline` (5 equipos) e `inventory_inout` (4 equipos), permanecen en las pruebas de regresión y no forman parte de las pruebas de rendimiento.
 
-Cada ejemplo tiene, por tanto, once medidas principales: una ejecución secuencial, cinco ejecuciones OpenMP con 2, 4, 8, 12 y 24 hilos, y cinco ejecuciones OpenMPD con el mismo número de procesos MPI. Usa `--include-ompd-openmp` para incluir las configuraciones OpenMPD+OpenMP disponibles.
+Cada ejemplo tiene once medidas principales: una ejecución secuencial, cinco ejecuciones OpenMP y cinco ejecuciones OpenMPD. Usa `--include-ompd-openmp` para incluir las configuraciones OpenMPD+OpenMP disponibles.
+
+Ejecuta solo Fibonacci desde `OpenMpD`:
+
+```sh
+python3 tests/performance/run_performance.py --family tasking --case fibonacci
+```
 
 El plan completo puede revisarse sin compilar ni ejecutar nada:
 

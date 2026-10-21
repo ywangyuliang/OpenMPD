@@ -10,5 +10,3 @@ Simple examples of combinations that are currently unsupported.
 | `broadcast_before_tasks.c` | A separate `cluster broad(x)` before the tasking region. | Does not terminate. |
 | `broadcast_after_tasks.c` | A separate `cluster broad(x)` after the tasking region. | Does not terminate. |
 | `barrier_after_tasks.c` | `MPI_Barrier(MPI_COMM_WORLD)` after the tasks. | Does not terminate. |
-
-The translator rejects the first two programs. The other four translate and compile, but remain waiting and never finish. Use `timeout` to limit their execution when testing.

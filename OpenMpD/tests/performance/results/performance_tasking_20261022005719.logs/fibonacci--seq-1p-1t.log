@@ -1,0 +1,29 @@
+fibonacci(50) = 12586269025
+time: 34.644691 seconds
+OMPD_CALC_TIME_SECONDS=34.644691467
+fibonacci(50) = 12586269025
+time: 34.634953 seconds
+OMPD_CALC_TIME_SECONDS=34.634952545
+fibonacci(50) = 12586269025
+time: 34.642887 seconds
+OMPD_CALC_TIME_SECONDS=34.642887115
+fibonacci(50) = 12586269025
+time: 34.657352 seconds
+OMPD_CALC_TIME_SECONDS=34.657352448
+fibonacci(50) = 12586269025
+time: 34.680168 seconds
+OMPD_CALC_TIME_SECONDS=34.680168152
+
+ Performance counter stats for '../sequential.out 50 30' (5 runs):
+
+         34,667.49 msec task-clock                #    1.000 CPUs utilized            ( +-  0.02% )
+             3,125      context-switches          #   90.216 /sec                     ( +-  0.20% )
+                 2      cpu-migrations            #    0.058 /sec                     ( +- 24.49% )
+                65      page-faults               #    1.876 /sec                     ( +-  0.78% )
+   110,291,926,387      cycles                    #    3.184 GHz                      ( +-  0.01% )
+   337,844,343,188      instructions              #    3.06  insn per cycle           ( +-  0.00% )
+    48,486,719,530      branches                  #    1.400 G/sec                    ( +-  0.00% )
+       150,059,493      branch-misses             #    0.31% of all branches          ( +-  0.22% )
+
+          34.65291 +- 0.00788 seconds time elapsed  ( +-  0.02% )
+

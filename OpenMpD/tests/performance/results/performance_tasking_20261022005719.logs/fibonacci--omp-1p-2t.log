@@ -1,0 +1,29 @@
+fibonacci(50) = 12586269025
+time: 21.859576 seconds
+OMPD_CALC_TIME_SECONDS=21.859576009
+fibonacci(50) = 12586269025
+time: 21.515731 seconds
+OMPD_CALC_TIME_SECONDS=21.515731391
+fibonacci(50) = 12586269025
+time: 21.799145 seconds
+OMPD_CALC_TIME_SECONDS=21.799144914
+fibonacci(50) = 12586269025
+time: 21.831217 seconds
+OMPD_CALC_TIME_SECONDS=21.831217073
+fibonacci(50) = 12586269025
+time: 21.794194 seconds
+OMPD_CALC_TIME_SECONDS=21.794193947
+
+ Performance counter stats for '../openmp.out 50 30' (5 runs):
+
+         35,330.65 msec task-clock                #    1.624 CPUs utilized            ( +-  0.29% )
+             3,381      context-switches          #   95.842 /sec                     ( +-  0.31% )
+                 7      cpu-migrations            #    0.198 /sec                     ( +- 13.25% )
+               154      page-faults               #    4.365 /sec                     ( +-  2.80% )
+   110,863,211,933      cycles                    #    3.143 GHz                      ( +-  0.02% )
+   334,771,997,133      instructions              #    3.02  insn per cycle           ( +-  0.00% )
+    48,739,789,863      branches                  #    1.382 G/sec                    ( +-  0.00% )
+       152,625,523      branch-misses             #    0.31% of all branches          ( +-  0.80% )
+
+           21.7617 +- 0.0622 seconds time elapsed  ( +-  0.29% )
+

@@ -1,0 +1,12 @@
+benchmark,family,comparison_group,variant,processes,application_processes,threads,total_resources,repetitions,mean_seconds,calculation_mean_seconds
+fibonacci,tasking,core,seq,1,1,1,1,5,34.652910000,34.652010345
+fibonacci,tasking,core,omp,1,1,2,2,5,21.761700000,21.759972667
+fibonacci,tasking,core,omp,1,1,4,4,5,14.668600000,14.667049747
+fibonacci,tasking,core,omp,1,1,8,8,5,9.364000000,9.362424254
+fibonacci,tasking,core,omp,1,1,12,12,5,7.038000000,7.036729052
+fibonacci,tasking,core,omp,1,1,24,24,5,4.230600000,4.229097158
+fibonacci,tasking,core,ompd,3,2,1,3,5,20.261100000,19.630147934
+fibonacci,tasking,core,ompd,5,4,1,5,5,11.685400000,11.038613510
+fibonacci,tasking,core,ompd,9,8,1,9,5,6.437200000,5.780963707
+fibonacci,tasking,core,ompd,13,12,1,13,5,7.129000000,6.440196419
+fibonacci,tasking,core,ompd,25,24,1,25,5,6.002500000,5.277017021

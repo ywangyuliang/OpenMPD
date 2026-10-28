@@ -22,9 +22,7 @@ REPO = OPENMPD.parent
 REPEATS = 5
 TIMEOUT = 300
 OPTIMIZATION = "-O2"
-PHYSICAL_CORES = 12
 HARDWARE_THREADS = 24
-SOCKETS = 2
 VARIANT_ORDER = ("seq", "omp", "mpi", "mpi_omp", "ompd", "ompd_omp")
 MPI_REFERENCE_VARIANTS = frozenset(("mpi", "mpi_omp"))
 HYBRID_VARIANTS = frozenset(("mpi_omp", "ompd_omp"))
@@ -402,42 +400,9 @@ class Runner:
         executable = relative_path(executable, run_dir)
         command = [executable, *program_args(case, run_dir)]
         if variant in ("mpi", "mpi_omp", "ompd", "ompd_omp"):
-            if variant in HYBRID_VARIANTS:
-                hybrid_map_by = (
-                    getattr(self.args, "hybrid_map_by", None)
-                    or f"ppr:{processes // SOCKETS}:socket:PE={threads}"
-                )
-                if processes * threads <= PHYSICAL_CORES:
-                    # Reserve a distinct physical core for every OpenMP
-                    # thread of every rank.
-                    mpi_options = [
-                        "--map-by", hybrid_map_by,
-                        "--bind-to", "core",
-                    ]
-                else:
-                    # This configuration needs logical CPU binding because
-                    # it exceeds the physical-core limit.
-                    mpi_options = [
-                        "--use-hwthread-cpus",
-                        "--map-by", hybrid_map_by,
-                        "--bind-to", "hwthread",
-                    ]
-            else:
-                mpi_options = ["--map-by", "core", "--bind-to", "core"]
-            if variant not in HYBRID_VARIANTS and processes > PHYSICAL_CORES:
-                mpi_options = [
-                    "--use-hwthread-cpus",
-                    "--map-by", "hwthread",
-                    "--bind-to", "hwthread",
-                ]
-                if case.uses_runtime and variant == "ompd" and processes > HARDWARE_THREADS:
-                    mpi_options = [
-                        "--use-hwthread-cpus", "--oversubscribe",
-                        "--map-by", "hwthread",
-                        "--bind-to", "hwthread:overload-allowed",
-                    ]
-            if getattr(self.args, "report_bindings", False):
-                mpi_options.append("--report-bindings")
+            mpi_options = ["--use-hwthread-cpus"]
+            if case.uses_runtime and variant == "ompd" and processes > HARDWARE_THREADS:
+                mpi_options.append("--oversubscribe")
             command = ["mpirun", *mpi_options, "-np", str(processes), *command]
         return command
 
@@ -572,12 +537,6 @@ def parse_args():
         action="store_true",
         help="also measure available OpenMPD+OpenMP and MPI+OpenMP variants",
     )
-    parser.add_argument(
-        "--report-bindings",
-        action="store_true",
-        help="ask mpirun to record the CPU binding of each MPI rank in the logs",
-    )
-    parser.add_argument("--hybrid-map-by")
     parser.add_argument(
         "--plan",
         action="store_true",

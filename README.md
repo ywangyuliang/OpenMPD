@@ -363,7 +363,7 @@ The scanner sends the remaining C tokens to `writer.cc`. The writer constructs o
 
 Tasking also uses the second pass, but task bodies are captured instead of copied directly. The tasking modules store each `task_async` body and generate a function for it. At the original position of the directive, they generate the code that creates the task, registers its dependencies and submits it to the runtime.
 
-The scheduler normally selects the task that became ready most recently (LIFO). At `taskwait`, its worker only selects ready tasks created by the waiting task, directly or through other tasks. If several are ready, it selects the most recent one.
+The master uses MPI world rank 0 with or without tasking. With tasking, the scheduler uses the last rank (`numprocs - 1`).
 
 After parsing, `main.cc` flushes the writer and applies the deferred output slots. These slots contain headers, global declarations and task definitions that must appear earlier in the generated file.
 
@@ -373,7 +373,7 @@ The translator supports three groups of constructs:
 
 - **Data and work distribution.** A `cluster` region can allocate and broadcast data with `alloc` and `broad`, move arrays with `scatter`, `gather` and `allgather`, apply `reduction` and `allreduction`, and distribute loop iterations. `declare cluster` generates MPI datatype declarations.
 - **Halo exchange.** A `halo(...)` clause declared on a `cluster` marks the array that needs ghost-border communication. A later `cluster distribute update halo(...)` uses the bounds of the last distributed loop and emits neighbour exchanges for the rows above and below the local block.
-- **Tasking.** The translator supports `task_async` and `taskwait`. It captures each asynchronous task body and generates its function and input structure. `ompd_runtime.c` manages dependencies and selects ready tasks in LIFO order. At `taskwait`, it only selects work created by the waiting task, directly or through other tasks. `depend(inout: ...)` preserves the initial value and serializes read-modify-write tasks that use the same dependency.
+- **Tasking.** The translator supports `task_async` and `taskwait`. `ompd_runtime.c` manages dependencies and selects ready tasks in LIFO order. At `taskwait`, it only selects work created by the waiting task, directly or through other tasks. `depend(inout: ...)` preserves the initial value and serializes read-modify-write tasks that use the same dependency.
 
 ## File map
 
@@ -892,7 +892,7 @@ El scanner envía los tokens C restantes a `writer.cc`. El writer construye una 
 
 Tasking también usa la segunda pasada, pero los cuerpos de tarea se capturan en vez de copiarse directamente. Los módulos de tasking guardan el cuerpo de cada `task_async` y generan una función para él. En la posición original de la directiva generan el código que crea la tarea, registra sus dependencias y la envía al runtime.
 
-El planificador selecciona normalmente la tarea que ha pasado a estar lista más recientemente (LIFO). En `taskwait`, su worker solo selecciona tareas listas creadas por la tarea que espera, directamente o a través de otras tareas. Si hay varias, selecciona la más reciente.
+El master usa el rango 0 de MPI_COMM_WORLD, con y sin tasking. Con tasking, el scheduler ocupa el último rango (`numprocs - 1`).
 
 Al terminar el análisis, `main.cc` vacía el writer y aplica los slots diferidos. Estos slots contienen cabeceras, declaraciones globales y definiciones de tareas que deben aparecer antes en el fichero generado.
 
@@ -902,7 +902,7 @@ El repositorio contiene tres grupos principales de construcciones traducidas:
 
 - **Distribución de datos y trabajo.** Una región `cluster` puede reservar y difundir datos con `alloc` y `broad`, mover arrays con `scatter`, `gather` y `allgather`, aplicar `reduction` y `allreduction`, y distribuir las iteraciones de un bucle. `declare cluster` genera declaraciones de tipos MPI.
 - **Intercambio de halo.** Una cláusula `halo(...)` declarada en un `cluster` marca el array que necesita comunicación de bordes fantasma. Después, `cluster distribute update halo(...)` usa los límites del último bucle distribuido y emite intercambios con los vecinos para las filas superior e inferior del bloque local.
-- **Tasking.** El traductor soporta `task_async` y `taskwait`. Captura el cuerpo de cada tarea asíncrona y genera su función y su estructura de entrada. `ompd_runtime.c` gestiona las dependencias y selecciona las tareas listas en orden LIFO. En `taskwait`, solo selecciona trabajo creado por la tarea que espera, directamente o a través de otras tareas. `depend(inout: ...)` conserva el valor inicial y serializa las tareas de lectura-modificación-escritura sobre una misma dependencia.
+- **Tasking.** El traductor soporta `task_async` y `taskwait`. `ompd_runtime.c` gestiona las dependencias y selecciona las tareas listas en orden LIFO. En `taskwait`, solo selecciona trabajo creado por la tarea que espera, directamente o a través de otras tareas. `depend(inout: ...)` conserva el valor inicial y serializa las tareas de lectura-modificación-escritura sobre una misma dependencia.
 
 ## Mapa de ficheros
 

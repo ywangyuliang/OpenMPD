@@ -16,9 +16,9 @@
 #define OMPD_MAX_DEPS (OMPD_MAX_TASKS * OMPD_MAX_DEPS_PER_TASK)
 #define OMPD_DEP_INDEX_BUCKETS 1048576
 
-#define OMPD_SCHEDULER_RANK 0
-#define OMPD_MASTER_RANK 1
-#define OMPD_FIRST_WORKER_RANK 2
+#define OMPD_SCHEDULER_RANK (ompd_world_size - 1)
+#define OMPD_MASTER_RANK 0
+#define OMPD_FIRST_WORKER_RANK 1
 
 #define OMPD_MPI_TAG_REQ         0
 #define OMPD_MPI_TAG_WORK_REPLY  1
@@ -1274,7 +1274,7 @@ static void ompd_scheduler_loop() {
     shutdown_requested = 0;
     shutdown_reply_count = 0;
 
-    active_worker_count = ompd_world_size - OMPD_FIRST_WORKER_RANK;
+    active_worker_count = OMPD_SCHEDULER_RANK - OMPD_FIRST_WORKER_RANK;
     if(active_worker_count < 0) {
         active_worker_count = 0;
     }
@@ -1624,7 +1624,7 @@ static void ompd_worker_loop() {
 }
 
 int ompd_current_rank_is_scheduler() {
-    return ompd_world_rank == OMPD_SCHEDULER_RANK;
+    return ompd_world_rank >= 0 && ompd_world_rank == OMPD_SCHEDULER_RANK;
 }
 
 int ompd_current_rank_is_master() {
@@ -1632,7 +1632,7 @@ int ompd_current_rank_is_master() {
 }
 
 int ompd_current_rank_is_worker() {
-    return ompd_world_rank >= OMPD_FIRST_WORKER_RANK;
+    return ompd_world_rank >= OMPD_FIRST_WORKER_RANK && ompd_world_rank < OMPD_SCHEDULER_RANK;
 }
 
 void ompd_initialize_runtime(int *argc, char ***argv) {

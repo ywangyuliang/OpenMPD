@@ -1,0 +1,104 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[albaricoque:1119472] MCW rank 7 bound to socket 0[core 3[hwt 1]]: [../../../.B/../..][../../../../../..]
+[albaricoque:1119472] MCW rank 8 bound to socket 0[core 4[hwt 0]]: [../../../../B./..][../../../../../..]
+[albaricoque:1119472] MCW rank 9 bound to socket 0[core 4[hwt 1]]: [../../../../.B/..][../../../../../..]
+[albaricoque:1119472] MCW rank 10 bound to socket 0[core 5[hwt 0]]: [../../../../../B.][../../../../../..]
+[albaricoque:1119472] MCW rank 11 bound to socket 0[core 5[hwt 1]]: [../../../../../.B][../../../../../..]
+[albaricoque:1119472] MCW rank 12 bound to socket 1[core 6[hwt 0]]: [../../../../../..][B./../../../../..]
+[albaricoque:1119472] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../..][../../../../../..]
+[albaricoque:1119472] MCW rank 1 bound to socket 0[core 0[hwt 1]]: [.B/../../../../..][../../../../../..]
+[albaricoque:1119472] MCW rank 2 bound to socket 0[core 1[hwt 0]]: [../B./../../../..][../../../../../..]
+[albaricoque:1119472] MCW rank 3 bound to socket 0[core 1[hwt 1]]: [../.B/../../../..][../../../../../..]
+[albaricoque:1119472] MCW rank 4 bound to socket 0[core 2[hwt 0]]: [../../B./../../..][../../../../../..]
+[albaricoque:1119472] MCW rank 5 bound to socket 0[core 2[hwt 1]]: [../../.B/../../..][../../../../../..]
+[albaricoque:1119472] MCW rank 6 bound to socket 0[core 3[hwt 0]]: [../../../B./../..][../../../../../..]
+fibonacci(50) = 12586269025
+time: 6.286620 seconds
+OMPD_CALC_TIME_SECONDS=6.286620140
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[albaricoque:1119515] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../..][../../../../../..]
+[albaricoque:1119515] MCW rank 1 bound to socket 0[core 0[hwt 1]]: [.B/../../../../..][../../../../../..]
+[albaricoque:1119515] MCW rank 2 bound to socket 0[core 1[hwt 0]]: [../B./../../../..][../../../../../..]
+[albaricoque:1119515] MCW rank 3 bound to socket 0[core 1[hwt 1]]: [../.B/../../../..][../../../../../..]
+[albaricoque:1119515] MCW rank 4 bound to socket 0[core 2[hwt 0]]: [../../B./../../..][../../../../../..]
+[albaricoque:1119515] MCW rank 5 bound to socket 0[core 2[hwt 1]]: [../../.B/../../..][../../../../../..]
+[albaricoque:1119515] MCW rank 6 bound to socket 0[core 3[hwt 0]]: [../../../B./../..][../../../../../..]
+[albaricoque:1119515] MCW rank 7 bound to socket 0[core 3[hwt 1]]: [../../../.B/../..][../../../../../..]
+[albaricoque:1119515] MCW rank 8 bound to socket 0[core 4[hwt 0]]: [../../../../B./..][../../../../../..]
+[albaricoque:1119515] MCW rank 9 bound to socket 0[core 4[hwt 1]]: [../../../../.B/..][../../../../../..]
+[albaricoque:1119515] MCW rank 10 bound to socket 0[core 5[hwt 0]]: [../../../../../B.][../../../../../..]
+[albaricoque:1119515] MCW rank 11 bound to socket 0[core 5[hwt 1]]: [../../../../../.B][../../../../../..]
+[albaricoque:1119515] MCW rank 12 bound to socket 1[core 6[hwt 0]]: [../../../../../..][B./../../../../..]
+fibonacci(50) = 12586269025
+time: 6.448218 seconds
+OMPD_CALC_TIME_SECONDS=6.448217869
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[albaricoque:1119558] MCW rank 10 bound to socket 0[core 5[hwt 0]]: [../../../../../B.][../../../../../..]
+[albaricoque:1119558] MCW rank 11 bound to socket 0[core 5[hwt 1]]: [../../../../../.B][../../../../../..]
+[albaricoque:1119558] MCW rank 12 bound to socket 1[core 6[hwt 0]]: [../../../../../..][B./../../../../..]
+[albaricoque:1119558] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../..][../../../../../..]
+[albaricoque:1119558] MCW rank 1 bound to socket 0[core 0[hwt 1]]: [.B/../../../../..][../../../../../..]
+[albaricoque:1119558] MCW rank 2 bound to socket 0[core 1[hwt 0]]: [../B./../../../..][../../../../../..]
+[albaricoque:1119558] MCW rank 3 bound to socket 0[core 1[hwt 1]]: [../.B/../../../..][../../../../../..]
+[albaricoque:1119558] MCW rank 4 bound to socket 0[core 2[hwt 0]]: [../../B./../../..][../../../../../..]
+[albaricoque:1119558] MCW rank 5 bound to socket 0[core 2[hwt 1]]: [../../.B/../../..][../../../../../..]
+[albaricoque:1119558] MCW rank 6 bound to socket 0[core 3[hwt 0]]: [../../../B./../..][../../../../../..]
+[albaricoque:1119558] MCW rank 7 bound to socket 0[core 3[hwt 1]]: [../../../.B/../..][../../../../../..]
+[albaricoque:1119558] MCW rank 8 bound to socket 0[core 4[hwt 0]]: [../../../../B./..][../../../../../..]
+[albaricoque:1119558] MCW rank 9 bound to socket 0[core 4[hwt 1]]: [../../../../.B/..][../../../../../..]
+fibonacci(50) = 12586269025
+time: 6.516886 seconds
+OMPD_CALC_TIME_SECONDS=6.516885757
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[albaricoque:1119601] MCW rank 9 bound to socket 0[core 4[hwt 1]]: [../../../../.B/..][../../../../../..]
+[albaricoque:1119601] MCW rank 10 bound to socket 0[core 5[hwt 0]]: [../../../../../B.][../../../../../..]
+[albaricoque:1119601] MCW rank 11 bound to socket 0[core 5[hwt 1]]: [../../../../../.B][../../../../../..]
+[albaricoque:1119601] MCW rank 12 bound to socket 1[core 6[hwt 0]]: [../../../../../..][B./../../../../..]
+[albaricoque:1119601] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../..][../../../../../..]
+[albaricoque:1119601] MCW rank 1 bound to socket 0[core 0[hwt 1]]: [.B/../../../../..][../../../../../..]
+[albaricoque:1119601] MCW rank 2 bound to socket 0[core 1[hwt 0]]: [../B./../../../..][../../../../../..]
+[albaricoque:1119601] MCW rank 3 bound to socket 0[core 1[hwt 1]]: [../.B/../../../..][../../../../../..]
+[albaricoque:1119601] MCW rank 4 bound to socket 0[core 2[hwt 0]]: [../../B./../../..][../../../../../..]
+[albaricoque:1119601] MCW rank 5 bound to socket 0[core 2[hwt 1]]: [../../.B/../../..][../../../../../..]
+[albaricoque:1119601] MCW rank 6 bound to socket 0[core 3[hwt 0]]: [../../../B./../..][../../../../../..]
+[albaricoque:1119601] MCW rank 7 bound to socket 0[core 3[hwt 1]]: [../../../.B/../..][../../../../../..]
+[albaricoque:1119601] MCW rank 8 bound to socket 0[core 4[hwt 0]]: [../../../../B./..][../../../../../..]
+fibonacci(50) = 12586269025
+time: 6.489433 seconds
+OMPD_CALC_TIME_SECONDS=6.489432812
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+[albaricoque:1119644] MCW rank 0 bound to socket 0[core 0[hwt 0]]: [B./../../../../..][../../../../../..]
+[albaricoque:1119644] MCW rank 1 bound to socket 0[core 0[hwt 1]]: [.B/../../../../..][../../../../../..]
+[albaricoque:1119644] MCW rank 2 bound to socket 0[core 1[hwt 0]]: [../B./../../../..][../../../../../..]
+[albaricoque:1119644] MCW rank 3 bound to socket 0[core 1[hwt 1]]: [../.B/../../../..][../../../../../..]
+[albaricoque:1119644] MCW rank 4 bound to socket 0[core 2[hwt 0]]: [../../B./../../..][../../../../../..]
+[albaricoque:1119644] MCW rank 5 bound to socket 0[core 2[hwt 1]]: [../../.B/../../..][../../../../../..]
+[albaricoque:1119644] MCW rank 6 bound to socket 0[core 3[hwt 0]]: [../../../B./../..][../../../../../..]
+[albaricoque:1119644] MCW rank 7 bound to socket 0[core 3[hwt 1]]: [../../../.B/../..][../../../../../..]
+[albaricoque:1119644] MCW rank 8 bound to socket 0[core 4[hwt 0]]: [../../../../B./..][../../../../../..]
+[albaricoque:1119644] MCW rank 9 bound to socket 0[core 4[hwt 1]]: [../../../../.B/..][../../../../../..]
+[albaricoque:1119644] MCW rank 10 bound to socket 0[core 5[hwt 0]]: [../../../../../B.][../../../../../..]
+[albaricoque:1119644] MCW rank 11 bound to socket 0[core 5[hwt 1]]: [../../../../../.B][../../../../../..]
+[albaricoque:1119644] MCW rank 12 bound to socket 1[core 6[hwt 0]]: [../../../../../..][B./../../../../..]
+fibonacci(50) = 12586269025
+time: 6.616274 seconds
+OMPD_CALC_TIME_SECONDS=6.616273880
+
+ Performance counter stats for 'mpirun --use-hwthread-cpus --map-by hwthread --bind-to hwthread --report-bindings -np 13 tests/performance/results/fibonacci_affinity_20261027214539/fibonacci 50 30' (5 runs):
+
+         87,057.21 msec task-clock                #   12.138 CPUs utilized            ( +-  0.82% )
+            34,055      context-switches          #  399.858 /sec                     ( +-  0.60% )
+               126      cpu-migrations            #    1.479 /sec                     ( +-  1.26% )
+            92,217      page-faults               #    1.083 K/sec                    ( +-  0.16% )
+   228,976,032,048      cycles                    #    2.689 GHz                      ( +-  0.81% )
+   396,112,848,597      instructions              #    1.77  insn per cycle           ( +-  0.64% )
+    60,842,618,301      branches                  #  714.386 M/sec                    ( +-  0.90% )
+       227,291,178      branch-misses             #    0.38% of all branches          ( +-  1.33% )
+
+            7.1725 +- 0.0535 seconds time elapsed  ( +-  0.75% )
+

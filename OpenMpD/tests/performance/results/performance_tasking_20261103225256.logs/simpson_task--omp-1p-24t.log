@@ -1,0 +1,59 @@
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.002864 seconds
+OMPD_CALC_TIME_SECONDS=0.002863884
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.002286 seconds
+OMPD_CALC_TIME_SECONDS=0.002285957
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.002162 seconds
+OMPD_CALC_TIME_SECONDS=0.002161980
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.001923 seconds
+OMPD_CALC_TIME_SECONDS=0.001923084
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.001826 seconds
+OMPD_CALC_TIME_SECONDS=0.001826048
+
+ Performance counter stats for '../openmp.out 1e-8 20 10' (5 runs):
+
+             33.35 msec task-clock                #    8.289 CPUs utilized            ( +- 11.45% )
+                31      context-switches          #  747.973 /sec                     ( +-  4.03% )
+                 0      cpu-migrations            #    0.000 /sec                   
+               164      page-faults               #    3.957 K/sec                    ( +-  0.57% )
+        72,037,349      cycles                    #    1.738 GHz                      ( +-  2.37% )
+        24,771,474      instructions              #    0.34  insn per cycle           ( +-  3.64% )
+         6,748,718      branches                  #  162.834 M/sec                    ( +-  3.76% )
+            23,531      branch-misses             #    0.33% of all branches          ( +-  9.82% )
+
+          0.004024 +- 0.000306 seconds time elapsed  ( +-  7.61% )
+

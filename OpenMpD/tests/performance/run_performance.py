@@ -22,6 +22,7 @@ REPO = OPENMPD.parent
 REPEATS = 5
 TIMEOUT = 300
 OPTIMIZATION = "-O2"
+PHYSICAL_CORES = 12
 HARDWARE_THREADS = 24
 VARIANT_ORDER = ("seq", "omp", "mpi", "mpi_omp", "ompd", "ompd_omp")
 MPI_REFERENCE_VARIANTS = frozenset(("mpi", "mpi_omp"))
@@ -400,7 +401,7 @@ class Runner:
         executable = relative_path(executable, run_dir)
         command = [executable, *program_args(case, run_dir)]
         if variant in ("mpi", "mpi_omp", "ompd", "ompd_omp"):
-            mpi_options = ["--use-hwthread-cpus"]
+            mpi_options = ["--use-hwthread-cpus"] if processes > PHYSICAL_CORES else []
             if case.uses_runtime and variant == "ompd" and processes > HARDWARE_THREADS:
                 mpi_options.append("--oversubscribe")
             command = ["mpirun", *mpi_options, "-np", str(processes), *command]

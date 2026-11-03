@@ -473,7 +473,7 @@ The performance tests use the following process and thread counts:
 - `tests/performance/cases.tsv` lists the available variants for each benchmark. Individual cases cannot define a different scale.
 - Fixed-topology examples such as `pipeline` (5 teams) and `inventory_inout` (4 teams) remain in the regression tests and are not part of the performance tests.
 
-The runner uses Open MPI's `--use-hwthread-cpus` for every MPI launch. Only the 25-process tasking point also uses `--oversubscribe`.
+The runner uses Open MPI's `--use-hwthread-cpus` for more than 12 MPI processes. Only the 25-process tasking point also uses `--oversubscribe`.
 
 Each benchmark has eleven core measurements: one sequential run, five OpenMP runs and five OpenMPD runs. Use `--include-ompd-openmp` to include the available OpenMPD+OpenMP configurations.
 
@@ -1005,7 +1005,7 @@ Las pruebas de rendimiento usan los siguientes números de procesos e hilos:
 - `tests/performance/cases.tsv` enumera las variantes disponibles para cada ejemplo. Ningún caso puede definir una escala distinta.
 - Los ejemplos de topología fija, como `pipeline` (5 equipos) e `inventory_inout` (4 equipos), permanecen en las pruebas de regresión y no forman parte de las pruebas de rendimiento.
 
-El script usa `--use-hwthread-cpus` de Open MPI en todas las ejecuciones MPI. Solo añade `--oversubscribe` para los 25 procesos de tasking.
+El script usa `--use-hwthread-cpus` de Open MPI cuando hay más de 12 procesos MPI. Solo añade `--oversubscribe` para los 25 procesos de tasking.
 
 Cada ejemplo tiene once medidas principales: una ejecución secuencial, cinco ejecuciones OpenMP y cinco ejecuciones OpenMPD. Usa `--include-ompd-openmp` para incluir las configuraciones OpenMPD+OpenMP disponibles.
 

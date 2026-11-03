@@ -15,7 +15,7 @@ The translator is built as a single executable, `fparse`.
 ## Repository layout
 
 ```
-OMPD/
+OpenMPD/
 ├── OpenMpD/
 │   ├── include/   translator headers
 │   ├── src/       translator and runtime sources
@@ -28,13 +28,13 @@ OMPD/
 
 ## Build and run
 
-OpenMPD is intended for Linux systems. It requires GNU Make, GCC/G++, Bison, Flex, an MPI implementation that provides `mpicc` and `mpirun`, and Python 3 for the test scripts. The performance tests also require Linux `perf`.
+OpenMPD is intended for Linux systems. It requires GNU Make, GCC/G++, Bison, Flex, an MPI implementation that provides `mpicc` and `mpirun`, and Python 3.10 or later for the test scripts. The performance tests also require Open MPI and Linux `perf`.
 
 Clone the repository and enter the translator directory before running the commands in this README:
 
 ```sh
-git clone https://github.com/Yul1ang/OMPD.git
-cd OMPD/OpenMpD
+git clone https://github.com/ywangyuliang/OpenMPD.git
+cd OpenMPD/OpenMpD
 ```
 
 ### 1. Build the translator
@@ -81,7 +81,7 @@ Programs that use `task_async` or `taskwait` must be linked with the OpenMPD tas
 ```sh
 ./fparse ../examples/tasks/fibonacci/fibonacci-ompd.c log.txt error.txt fibonacci_ompd_output.c
 mpicc -O2 fibonacci_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o fibonacci_ompd_out
-mpirun -np 4 ./fibonacci_ompd_out 20 10
+mpirun -np 5 ./fibonacci_ompd_out 20 10
 ```
 
 ### 4. Complete example commands
@@ -250,6 +250,8 @@ mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/halo/image_filters/lenna.pgm 
 
 #### Tasking: Fibonacci
 
+Scalable tasking examples use one extra MPI process for the scheduler: 8 compute processes require `-np 9`.
+
 ```sh
 gcc -O2 ../examples/tasks/fibonacci/fibonacci-seq.c -o fibonacci_seq_out
 ./fibonacci_seq_out 50
@@ -260,8 +262,9 @@ gcc -O2 -fopenmp ../examples/tasks/fibonacci/fibonacci-omp.c -o fibonacci_omp_ou
 
 ./fparse ../examples/tasks/fibonacci/fibonacci-ompd.c log.txt error.txt fibonacci_ompd_output.c
 mpicc -O2 fibonacci_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o fibonacci_ompd_out
-mpirun -np 8 ./fibonacci_ompd_out 50 30
-mpirun --use-hwthread-cpus -np 16 ./fibonacci_ompd_out 50 30
+mpirun -np 9 ./fibonacci_ompd_out 50 30
+mpirun --use-hwthread-cpus -np 13 ./fibonacci_ompd_out 50 30
+mpirun --use-hwthread-cpus --oversubscribe -np 25 ./fibonacci_ompd_out 50 30
 ```
 
 #### Tasking: PI
@@ -276,7 +279,7 @@ gcc -O2 -fopenmp ../examples/tasks/pi_task/pi_task_omp.c -o pi_task_omp_out -lm
 
 ./fparse ../examples/tasks/pi_task/pi_task_ompd.c log.txt error.txt pi_task_ompd_output.c
 mpicc -O2 pi_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -lm -o pi_task_ompd_out
-mpirun -np 4 ./pi_task_ompd_out 1000000000
+mpirun -np 5 ./pi_task_ompd_out 1000000000
 ```
 
 #### Tasking: Binomial
@@ -291,7 +294,7 @@ gcc -O2 -fopenmp ../examples/tasks/binomial/binomial_omp.c -o binomial_omp_out
 
 ./fparse ../examples/tasks/binomial/binomial_task_ompd.c log.txt error.txt binomial_task_ompd_output.c
 mpicc -O2 binomial_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o binomial_task_ompd_out
-mpirun -np 4 ./binomial_task_ompd_out 35 17 20
+mpirun -np 5 ./binomial_task_ompd_out 35 17 20
 ```
 
 #### Tasking: Pipeline
@@ -332,7 +335,7 @@ gcc -O2 -fopenmp ../examples/tasks/simpson/simpson_omp.c -lm -o simpson_omp_out
 
 ./fparse ../examples/tasks/simpson/simpson_task_ompd.c log.txt error.txt simpson_task_ompd_output.c
 mpicc -O2 simpson_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -lm -o simpson_task_ompd_out
-mpirun -np 4 ./simpson_task_ompd_out 1e-8 20 10
+mpirun -np 5 ./simpson_task_ompd_out 1e-8 20 10
 ```
 
 ## Architecture
@@ -470,6 +473,8 @@ The performance tests use the following process and thread counts:
 - `tests/performance/cases.tsv` lists the available variants for each benchmark. Individual cases cannot define a different scale.
 - Fixed-topology examples such as `pipeline` (5 teams) and `inventory_inout` (4 teams) remain in the regression tests and are not part of the performance tests.
 
+The runner uses Open MPI's `--use-hwthread-cpus` for every MPI launch. Only the 25-process tasking point also uses `--oversubscribe`.
+
 Each benchmark has eleven core measurements: one sequential run, five OpenMP runs and five OpenMPD runs. Use `--include-ompd-openmp` to include the available OpenMPD+OpenMP configurations.
 
 Run only Fibonacci from `OpenMpD`:
@@ -544,7 +549,7 @@ El traductor se construye como un único ejecutable, `fparse`.
 ## Estructura del repositorio
 
 ```
-OMPD/
+OpenMPD/
 ├── OpenMpD/
 │   ├── include/   cabeceras del traductor
 │   ├── src/       fuentes del traductor y del runtime
@@ -557,13 +562,13 @@ OMPD/
 
 ## Construir y ejecutar
 
-OpenMPD está pensado para sistemas Linux. Requiere GNU Make, GCC/G++, Bison, Flex, una implementación de MPI que proporcione `mpicc` y `mpirun`, y Python 3 para los scripts de pruebas. Las pruebas de rendimiento también requieren `perf` para Linux.
+OpenMPD está pensado para sistemas Linux. Requiere GNU Make, GCC/G++, Bison, Flex, una implementación de MPI que proporcione `mpicc` y `mpirun`, y Python 3.10 o posterior para los scripts de pruebas. Las pruebas de rendimiento también requieren Open MPI y `perf` para Linux.
 
 Clona el repositorio y entra en el directorio del traductor antes de ejecutar los comandos de este README:
 
 ```sh
-git clone https://github.com/Yul1ang/OMPD.git
-cd OMPD/OpenMpD
+git clone https://github.com/ywangyuliang/OpenMPD.git
+cd OpenMPD/OpenMpD
 ```
 
 ### 1. Construir el traductor
@@ -610,7 +615,7 @@ Los programas que usan `task_async` o `taskwait` deben enlazarse con el runtime 
 ```sh
 ./fparse ../examples/tasks/fibonacci/fibonacci-ompd.c log.txt error.txt fibonacci_ompd_output.c
 mpicc -O2 fibonacci_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o fibonacci_ompd_out
-mpirun -np 4 ./fibonacci_ompd_out 20 10
+mpirun -np 5 ./fibonacci_ompd_out 20 10
 ```
 
 ### 4. Comandos completos de ejemplos
@@ -779,6 +784,8 @@ mpirun -np 4 ./image_halo_ompd_out g 5 ../examples/halo/image_filters/lenna.pgm 
 
 #### Tasking: Fibonacci
 
+Los ejemplos de tasking escalables usan un proceso MPI adicional para el scheduler: 8 procesos de cálculo requieren `-np 9`.
+
 ```sh
 gcc -O2 ../examples/tasks/fibonacci/fibonacci-seq.c -o fibonacci_seq_out
 ./fibonacci_seq_out 50
@@ -789,8 +796,9 @@ gcc -O2 -fopenmp ../examples/tasks/fibonacci/fibonacci-omp.c -o fibonacci_omp_ou
 
 ./fparse ../examples/tasks/fibonacci/fibonacci-ompd.c log.txt error.txt fibonacci_ompd_output.c
 mpicc -O2 fibonacci_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o fibonacci_ompd_out
-mpirun -np 8 ./fibonacci_ompd_out 50 30
-mpirun --use-hwthread-cpus -np 16 ./fibonacci_ompd_out 50 30
+mpirun -np 9 ./fibonacci_ompd_out 50 30
+mpirun --use-hwthread-cpus -np 13 ./fibonacci_ompd_out 50 30
+mpirun --use-hwthread-cpus --oversubscribe -np 25 ./fibonacci_ompd_out 50 30
 ```
 
 #### Tasking: PI
@@ -805,7 +813,7 @@ gcc -O2 -fopenmp ../examples/tasks/pi_task/pi_task_omp.c -o pi_task_omp_out -lm
 
 ./fparse ../examples/tasks/pi_task/pi_task_ompd.c log.txt error.txt pi_task_ompd_output.c
 mpicc -O2 pi_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -lm -o pi_task_ompd_out
-mpirun -np 4 ./pi_task_ompd_out 1000000000
+mpirun -np 5 ./pi_task_ompd_out 1000000000
 ```
 
 #### Tasking: Binomial
@@ -820,7 +828,7 @@ gcc -O2 -fopenmp ../examples/tasks/binomial/binomial_omp.c -o binomial_omp_out
 
 ./fparse ../examples/tasks/binomial/binomial_task_ompd.c log.txt error.txt binomial_task_ompd_output.c
 mpicc -O2 binomial_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -o binomial_task_ompd_out
-mpirun -np 4 ./binomial_task_ompd_out 35 17 20
+mpirun -np 5 ./binomial_task_ompd_out 35 17 20
 ```
 
 #### Tasking: Pipeline
@@ -861,7 +869,7 @@ gcc -O2 -fopenmp ../examples/tasks/simpson/simpson_omp.c -lm -o simpson_omp_out
 
 ./fparse ../examples/tasks/simpson/simpson_task_ompd.c log.txt error.txt simpson_task_ompd_output.c
 mpicc -O2 simpson_task_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iinclude -lm -o simpson_task_ompd_out
-mpirun -np 4 ./simpson_task_ompd_out 1e-8 20 10
+mpirun -np 5 ./simpson_task_ompd_out 1e-8 20 10
 ```
 
 ## Arquitectura
@@ -996,6 +1004,8 @@ Las pruebas de rendimiento usan los siguientes números de procesos e hilos:
 - `run_performance.py` usa 2, 4, 8, 12 y 24 hilos OpenMP. OpenMPD con tasking usa 3, 5, 9, 13 y 25 procesos MPI, incluyendo un scheduler. Los demás casos OpenMPD y las referencias MPI usan 2, 4, 8, 12 y 24 procesos.
 - `tests/performance/cases.tsv` enumera las variantes disponibles para cada ejemplo. Ningún caso puede definir una escala distinta.
 - Los ejemplos de topología fija, como `pipeline` (5 equipos) e `inventory_inout` (4 equipos), permanecen en las pruebas de regresión y no forman parte de las pruebas de rendimiento.
+
+El script usa `--use-hwthread-cpus` de Open MPI en todas las ejecuciones MPI. Solo añade `--oversubscribe` para los 25 procesos de tasking.
 
 Cada ejemplo tiene once medidas principales: una ejecución secuencial, cinco ejecuciones OpenMP y cinco ejecuciones OpenMPD. Usa `--include-ompd-openmp` para incluir las configuraciones OpenMPD+OpenMP disponibles.
 

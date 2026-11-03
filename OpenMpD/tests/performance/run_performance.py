@@ -30,9 +30,6 @@ HYBRID_VARIANTS = frozenset(("mpi_omp", "ompd_omp"))
 PROCESS_COUNTS = (2, 4, 8, 12, 24)
 THREAD_COUNTS = (2, 4, 8, 12, 24)
 TASK_PROCESS_COUNTS = tuple(count + 1 for count in THREAD_COUNTS)
-# The hybrid campaign includes physical-core points at 4, 8 and 12 resources,
-# plus the existing 24-resource configurations. Intermediate 16-resource
-# points are intentionally omitted.
 HYBRID_POINTS = ((2, 2), (2, 4), (4, 2), (4, 3), (12, 2))
 HYBRID_THREAD_COUNTS = frozenset(threads for _, threads in HYBRID_POINTS)
 

@@ -1,0 +1,169 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 2.805865 seconds
+OMPD_CALC_TIME_SECONDS=2.805864811
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 2.713701 seconds
+OMPD_CALC_TIME_SECONDS=2.713701010
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 3.003123 seconds
+OMPD_CALC_TIME_SECONDS=3.003122807
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 2.689259 seconds
+OMPD_CALC_TIME_SECONDS=2.689259052
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 3.394959 seconds
+OMPD_CALC_TIME_SECONDS=3.394958973
+
+ Performance counter stats for 'mpirun --use-hwthread-cpus --oversubscribe -np 25 ../ompd.out 1000000000' (5 runs):
+
+         66,851.03 msec task-clock                #   20.309 CPUs utilized            ( +-  4.68% )
+           679,186      context-switches          #   12.218 K/sec                    ( +-  9.73% )
+             5,330      cpu-migrations            #   95.882 /sec                     ( +-  7.19% )
+            97,094      page-faults               #    1.747 K/sec                    ( +-  0.07% )
+   170,902,920,963      cycles                    #    3.074 GHz                      ( +-  4.79% )
+    81,048,737,983      instructions              #    0.57  insn per cycle           ( +-  3.93% )
+    14,168,811,997      branches                  #  254.885 M/sec                    ( +-  4.20% )
+        88,984,203      branch-misses             #    0.74% of all branches          ( +-  2.80% )
+
+             3.292 +- 0.133 seconds time elapsed  ( +-  4.03% )
+

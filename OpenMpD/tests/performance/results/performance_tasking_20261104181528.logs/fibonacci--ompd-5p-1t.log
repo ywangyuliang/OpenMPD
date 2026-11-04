@@ -1,0 +1,39 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 9.838953 seconds
+OMPD_CALC_TIME_SECONDS=9.838953018
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 9.909631 seconds
+OMPD_CALC_TIME_SECONDS=9.909630775
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 9.824894 seconds
+OMPD_CALC_TIME_SECONDS=9.824893951
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 9.911534 seconds
+OMPD_CALC_TIME_SECONDS=9.911534309
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 9.766750 seconds
+OMPD_CALC_TIME_SECONDS=9.766750336
+
+ Performance counter stats for 'mpirun -np 5 ../ompd.out 50 30' (5 runs):
+
+         49,321.95 msec task-clock                #    4.714 CPUs utilized            ( +-  0.27% )
+            12,082      context-switches          #  242.936 /sec                     ( +-  0.14% )
+               105      cpu-migrations            #    2.111 /sec                     ( +-  4.28% )
+            66,757      page-faults               #    1.342 K/sec                    ( +-  0.03% )
+   146,455,576,421      cycles                    #    2.945 GHz                      ( +-  0.24% )
+   424,485,681,822      instructions              #    2.87  insn per cycle           ( +-  0.12% )
+    65,751,307,818      branches                  #    1.322 G/sec                    ( +-  0.15% )
+       224,877,081      branch-misses             #    0.34% of all branches          ( +-  0.24% )
+
+           10.4622 +- 0.0275 seconds time elapsed  ( +-  0.26% )
+

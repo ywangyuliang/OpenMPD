@@ -1,0 +1,69 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.001506 seconds
+OMPD_CALC_TIME_SECONDS=0.001506000
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.001206 seconds
+OMPD_CALC_TIME_SECONDS=0.001206000
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.001988 seconds
+OMPD_CALC_TIME_SECONDS=0.001988000
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.001499 seconds
+OMPD_CALC_TIME_SECONDS=0.001499000
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+Simpson integral of sin(x) in [0, pi]
+eps = 1.000000000000e-08
+depth = 20
+thresh = 10
+result = 1.999999999997953
+expected = 2.000000000000000
+error = 2.047251257409e-12
+time: 0.001254 seconds
+OMPD_CALC_TIME_SECONDS=0.001254000
+
+ Performance counter stats for 'mpirun -np 3 ../ompd.out 1e-8 20 10' (5 runs):
+
+            330.27 msec task-clock                #    0.636 CPUs utilized            ( +-  0.69% )
+             3,715      context-switches          #   11.168 K/sec                    ( +-  0.23% )
+                72      cpu-migrations            #  216.448 /sec                     ( +-  2.34% )
+            12,411      page-faults               #   37.310 K/sec                    ( +-  0.03% )
+       602,328,689      cycles                    #    1.811 GHz                      ( +-  0.38% )
+       554,149,633      instructions              #    0.93  insn per cycle           ( +-  0.46% )
+       116,718,577      branches                  #  350.882 M/sec                    ( +-  0.47% )
+         2,728,097      branch-misses             #    2.32% of all branches          ( +-  0.19% )
+
+           0.51946 +- 0.00413 seconds time elapsed  ( +-  0.79% )
+

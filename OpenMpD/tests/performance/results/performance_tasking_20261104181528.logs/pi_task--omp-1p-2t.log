@@ -1,0 +1,34 @@
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 2.247395 seconds
+OMPD_CALC_TIME_SECONDS=2.247395039
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 2.251907 seconds
+OMPD_CALC_TIME_SECONDS=2.251906872
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 2.246953 seconds
+OMPD_CALC_TIME_SECONDS=2.246953011
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 2.219009 seconds
+OMPD_CALC_TIME_SECONDS=2.219008923
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 2.242129 seconds
+OMPD_CALC_TIME_SECONDS=2.242129087
+
+ Performance counter stats for '../openmp.out 1000000000' (5 runs):
+
+          4,451.17 msec task-clock                #    1.985 CPUs utilized            ( +-  0.25% )
+               405      context-switches          #   90.641 /sec                     ( +-  1.84% )
+                 2      cpu-migrations            #    0.448 /sec                     ( +- 12.25% )
+                93      page-faults               #   20.814 /sec                     ( +-  0.43% )
+    14,024,843,763      cycles                    #    3.139 GHz                      ( +-  0.00% )
+    12,010,636,132      instructions              #    0.86  insn per cycle           ( +-  0.00% )
+     1,002,329,771      branches                  #  224.327 M/sec                    ( +-  0.00% )
+            40,412      branch-misses             #    0.00% of all branches          ( +-  3.19% )
+
+           2.24288 +- 0.00596 seconds time elapsed  ( +-  0.27% )
+

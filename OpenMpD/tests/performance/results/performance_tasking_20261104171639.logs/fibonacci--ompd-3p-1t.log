@@ -1,0 +1,39 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 17.812515 seconds
+OMPD_CALC_TIME_SECONDS=17.812515259
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 17.854351 seconds
+OMPD_CALC_TIME_SECONDS=17.854351044
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 17.826481 seconds
+OMPD_CALC_TIME_SECONDS=17.826480865
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 17.928757 seconds
+OMPD_CALC_TIME_SECONDS=17.928756714
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 17.890308 seconds
+OMPD_CALC_TIME_SECONDS=17.890308380
+
+ Performance counter stats for 'mpirun -np 3 ../ompd.out 50 30' (5 runs):
+
+         54,029.32 msec task-clock                #    2.926 CPUs utilized            ( +-  0.12% )
+             9,488      context-switches          #  175.860 /sec                     ( +-  0.34% )
+                91      cpu-migrations            #    1.687 /sec                     ( +-  3.45% )
+            68,360      page-faults               #    1.267 K/sec                    ( +-  0.05% )
+   169,643,403,855      cycles                    #    3.144 GHz                      ( +-  0.10% )
+   501,039,105,816      instructions              #    2.96  insn per cycle           ( +-  0.17% )
+    81,600,194,276      branches                  #    1.512 G/sec                    ( +-  0.21% )
+       311,644,466      branch-misses             #    0.38% of all branches          ( +-  0.25% )
+
+           18.4684 +- 0.0243 seconds time elapsed  ( +-  0.13% )
+

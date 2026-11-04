@@ -1,0 +1,34 @@
+num_steps = 1000000000
+pi = 3.141592653589971
+time = 4.462663 seconds
+OMPD_CALC_TIME_SECONDS=4.462663174
+num_steps = 1000000000
+pi = 3.141592653589971
+time = 4.431846 seconds
+OMPD_CALC_TIME_SECONDS=4.431846142
+num_steps = 1000000000
+pi = 3.141592653589971
+time = 4.426628 seconds
+OMPD_CALC_TIME_SECONDS=4.426628113
+num_steps = 1000000000
+pi = 3.141592653589971
+time = 4.433730 seconds
+OMPD_CALC_TIME_SECONDS=4.433730125
+num_steps = 1000000000
+pi = 3.141592653589971
+time = 4.443290 seconds
+OMPD_CALC_TIME_SECONDS=4.443289995
+
+ Performance counter stats for '../sequential.out 1000000000' (5 runs):
+
+          4,442.15 msec task-clock                #    1.000 CPUs utilized            ( +-  0.14% )
+               398      context-switches          #   89.669 /sec                     ( +-  0.31% )
+                 0      cpu-migrations            #    0.000 /sec                   
+                63      page-faults               #   14.194 /sec                     ( +-  0.63% )
+    14,012,498,003      cycles                    #    3.157 GHz                      ( +-  0.00% )
+    12,008,167,639      instructions              #    0.86  insn per cycle           ( +-  0.00% )
+     1,001,627,739      branches                  #  225.666 M/sec                    ( +-  0.00% )
+            35,698      branch-misses             #    0.00% of all branches          ( +-  2.69% )
+
+           4.44093 +- 0.00637 seconds time elapsed  ( +-  0.14% )
+

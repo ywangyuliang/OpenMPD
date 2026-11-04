@@ -1,0 +1,44 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 1.617870 seconds
+OMPD_CALC_TIME_SECONDS=1.617870092
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 1.605665 seconds
+OMPD_CALC_TIME_SECONDS=1.605664968
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 1.588781 seconds
+OMPD_CALC_TIME_SECONDS=1.588780880
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 1.660858 seconds
+OMPD_CALC_TIME_SECONDS=1.660857916
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+num_steps = 1000000000
+pi = 3.141592653589821
+time = 1.611221 seconds
+OMPD_CALC_TIME_SECONDS=1.611221075
+
+ Performance counter stats for 'mpirun -np 9 ../ompd.out 1000000000' (5 runs):
+
+         12,625.53 msec task-clock                #    6.579 CPUs utilized            ( +-  0.88% )
+            12,770      context-switches          #    1.005 K/sec                    ( +-  0.47% )
+               202      cpu-migrations            #   15.890 /sec                     ( +-  2.18% )
+            27,619      page-faults               #    2.173 K/sec                    ( +-  0.07% )
+    33,507,504,454      cycles                    #    2.636 GHz                      ( +-  0.76% )
+    54,773,653,198      instructions              #    1.62  insn per cycle           ( +-  0.85% )
+     9,484,410,325      branches                  #  746.064 M/sec                    ( +-  0.99% )
+        48,150,663      branch-misses             #    0.51% of all branches          ( +-  0.83% )
+
+            1.9192 +- 0.0157 seconds time elapsed  ( +-  0.82% )
+

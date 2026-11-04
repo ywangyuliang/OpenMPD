@@ -1,0 +1,44 @@
+binomial(35, 17) = 4537567650
+threshold = 20
+expected = 4537567650
+correct = yes
+time: 1.684744 seconds
+OMPD_CALC_TIME_SECONDS=1.684744120
+binomial(35, 17) = 4537567650
+threshold = 20
+expected = 4537567650
+correct = yes
+time: 1.541474 seconds
+OMPD_CALC_TIME_SECONDS=1.541474104
+binomial(35, 17) = 4537567650
+threshold = 20
+expected = 4537567650
+correct = yes
+time: 1.672832 seconds
+OMPD_CALC_TIME_SECONDS=1.672832012
+binomial(35, 17) = 4537567650
+threshold = 20
+expected = 4537567650
+correct = yes
+time: 1.700998 seconds
+OMPD_CALC_TIME_SECONDS=1.700998068
+binomial(35, 17) = 4537567650
+threshold = 20
+expected = 4537567650
+correct = yes
+time: 1.598058 seconds
+OMPD_CALC_TIME_SECONDS=1.598058224
+
+ Performance counter stats for '../openmp.out 35 17 20' (5 runs):
+
+         11,005.90 msec task-clock                #    6.706 CPUs utilized            ( +-  0.34% )
+             1,018      context-switches          #   92.166 /sec                     ( +-  0.97% )
+                24      cpu-migrations            #    2.173 /sec                     ( +- 50.15% )
+               170      page-faults               #   15.391 /sec                     ( +-  0.96% )
+    30,639,116,699      cycles                    #    2.774 GHz                      ( +-  0.08% )
+   104,019,649,935      instructions              #    3.40  insn per cycle           ( +-  0.01% )
+    26,481,558,618      branches                  #    2.398 G/sec                    ( +-  0.01% )
+        82,555,999      branch-misses             #    0.31% of all branches          ( +-  0.46% )
+
+            1.6412 +- 0.0302 seconds time elapsed  ( +-  1.84% )
+

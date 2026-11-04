@@ -1,0 +1,39 @@
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 5.668070 seconds
+OMPD_CALC_TIME_SECONDS=5.668069839
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 5.266927 seconds
+OMPD_CALC_TIME_SECONDS=5.266926765
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 5.289325 seconds
+OMPD_CALC_TIME_SECONDS=5.289324760
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 5.279286 seconds
+OMPD_CALC_TIME_SECONDS=5.279285908
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+time: 5.736037 seconds
+OMPD_CALC_TIME_SECONDS=5.736036777
+
+ Performance counter stats for 'mpirun -np 9 ../ompd.out 50 30' (5 runs):
+
+         52,348.81 msec task-clock                #    8.593 CPUs utilized            ( +-  1.81% )
+            19,103      context-switches          #  384.075 /sec                     ( +-  0.52% )
+               209      cpu-migrations            #    4.202 /sec                     ( +-  4.17% )
+            73,071      page-faults               #    1.469 K/sec                    ( +-  0.05% )
+   141,629,066,981      cycles                    #    2.848 GHz                      ( +-  1.78% )
+   404,646,093,823      instructions              #    3.01  insn per cycle           ( +-  1.12% )
+    62,223,551,271      branches                  #    1.251 G/sec                    ( +-  1.56% )
+       215,043,070      branch-misses             #    0.36% of all branches          ( +-  2.50% )
+
+             6.092 +- 0.112 seconds time elapsed  ( +-  1.84% )
+

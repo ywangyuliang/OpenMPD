@@ -1,0 +1,15 @@
+OpenMP: 4 hilos, n=50, umbral=30
+fibonacci(50) = 12586269025
+tasks executed = 35420
+OMPD_TASKS_EXECUTED=35420
+time: 14.742483 seconds
+OMPD_CALC_TIME_SECONDS=14.742483000
+
+OpenMPD: 5 procesos MPI, n=50, umbral=30
+Authorization required, but no authorization protocol specified
+Authorization required, but no authorization protocol specified
+fibonacci(50) = 12586269025
+tasks executed = 35420
+OMPD_TASKS_EXECUTED=35420
+time: 10.224096 seconds
+OMPD_CALC_TIME_SECONDS=10.224096000

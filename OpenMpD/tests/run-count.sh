@@ -1,6 +1,6 @@
 #!/bin/bash
 set -eo pipefail
-cd "$(dirname "$0")/../../../OpenMpD"
+cd "$(dirname "$0")/.."
 
 make fparse
 
@@ -15,4 +15,4 @@ mpicc -O2 fibonacci_count_ompd_output.c src/ompd_runtime.c src/hash_map.c -Iincl
     echo
     echo "OpenMPD: 5 procesos MPI, n=50, umbral=30"
     mpirun -np 5 ./fibonacci_count_ompd_out 50 30
-} 2>&1 | tee ../examples/tasks/fibonacci/resultados.txt
+} 2>&1 | tee tests/resultados.txt
